@@ -4,6 +4,7 @@
 import type { CVData, Experience, Education, Project } from "@/lib/types";
 import { Section, Field } from "./primitives";
 import ListSection from "./ListSection";
+import Tip from "./Tip";
 
 const EditIcon = () => (
   <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -50,6 +51,15 @@ export function AboutSection({ data, setData }: { data: CVData; setData: (d: CVD
           rows={5}
         />
       </Field>
+      <Tip label="Güçlü özet nasıl yazılır?">
+        <ul style={{ margin: "4px 0 0 16px", padding: 0, lineHeight: 1.7 }}>
+          <li><b>Deneyim yılını</b> belirt: &quot;7+ yıl deneyimli…&quot;</li>
+          <li><b>Uzmanlık alanını</b> öne çıkar: Hangi teknoloji / sektör?</li>
+          <li><b>En büyük başarını</b> ekle: sayısal bir metrik varsa kullan.</li>
+          <li><b>ATS için</b> iş ilanındaki anahtar kelimeleri dahil et.</li>
+          <li>50-150 kelime arasında tut, paragraf değil özlü cümleler kullan.</li>
+        </ul>
+      </Tip>
     </Section>
   );
 }
@@ -102,6 +112,14 @@ export function ExperienceSection({ data, setData }: { data: CVData; setData: (d
               rows={4}
             />
           </Field>
+          <Tip label="Etkili madde nasıl yazılır?">
+            <ul style={{ margin: "4px 0 0 16px", padding: 0, lineHeight: 1.7 }}>
+              <li><b>Eylem fiiliyle başla:</b> Geliştirdim, Yönettim, Azalttım, Artırdım…</li>
+              <li><b>Sonucu ölçümlü ver:</b> &quot;%30 hız artışı&quot;, &quot;3 aylık süreyi 6 haftaya indirdim&quot;</li>
+              <li><b>Bağlamı ekle:</b> Ekip büyüklüğü, kapsam, kullanılan teknoloji</li>
+              <li>Her madde tek bir başarıyı anlatsın, çok uzun olmasın.</li>
+            </ul>
+          </Tip>
         </>
       )}
     />

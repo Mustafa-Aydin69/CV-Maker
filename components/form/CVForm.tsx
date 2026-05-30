@@ -17,6 +17,8 @@ import JobMatchPanel from "./JobMatchPanel";
 import VolunteerSection from "./VolunteerSection";
 import ReferencesSection from "./ReferencesSection";
 import CustomSectionsPanel from "./CustomSectionsPanel";
+import LinkedInImportPanel from "./LinkedInImportPanel";
+import ShortcutsPanel from "@/components/ShortcutsPanel";
 import type { AtsScore } from "@/lib/types";
 
 // ── İkonlar ──────────────────────────────────────────────────────────────────
@@ -418,6 +420,18 @@ export default function CVForm({
   lastSavedAt: number;
 }) {
   const importRef = useRef<HTMLInputElement>(null);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+  // "?" tuşu kısayol panelini aç/kapat
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (e.key === "?") setShortcutsOpen((o) => !o);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   const reset = () => {
     if (confirm("Tüm verileri sıfırlamak istediğine emin misin? Bu işlem geri alınamaz."))
@@ -452,6 +466,7 @@ export default function CVForm({
   };
 
   return (
+    <>
     <aside className="app__form" data-dark={settings.darkMode ? "true" : undefined}>
       {/* ── Üst çubuk ── */}
       <div className="topbar">
@@ -486,6 +501,15 @@ export default function CVForm({
             aria-label="Tema değiştir"
           >
             {settings.darkMode ? <SunIcon /> : <MoonIcon />}
+          </button>
+          <button
+            className="icon-btn"
+            onClick={() => setShortcutsOpen(true)}
+            title="Klavye kısayolları (?)"
+            aria-label="Kısayollar"
+            style={{ fontSize: 13, fontWeight: 700 }}
+          >
+            ?
           </button>
           <button className="btn btn--ghost" onClick={clearAll} title="Tüm alanları boşalt">Temizle</button>
           <button className="btn btn--ghost" onClick={reset}    title="Örnek veriye dön">Sıfırla</button>
@@ -523,6 +547,7 @@ export default function CVForm({
         <LanguagesSection      data={data} setData={setData} />
         <HobbiesSection        data={data} setData={setData} />
         <CustomSectionsPanel   data={data} setData={setData} />
+        <LinkedInImportPanel   data={data} setData={setData} />
         <JobMatchPanel         data={data} />
 
         <div style={{ margin: "18px 12px", display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -532,5 +557,7 @@ export default function CVForm({
         </div>
       </div>
     </aside>
+    {shortcutsOpen && <ShortcutsPanel onClose={() => setShortcutsOpen(false)} />}
+    </>
   );
 }

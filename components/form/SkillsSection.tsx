@@ -4,6 +4,7 @@
 import { useState } from "react";
 import type { CVData, SkillCategory } from "@/lib/types";
 import { Section } from "./primitives";
+import Tip from "./Tip";
 
 const FlaskIcon = () => (
   <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -87,8 +88,16 @@ export default function SkillsSection({ data, setData }: { data: CVData; setData
   return (
     <Section icon={<FlaskIcon />} title="Yetenekler (Anahtar Kelimeler)" count={totalCount}>
       <div className="field__hint" style={{ margin: "-4px 0 4px" }}>
-        Kategorilere göre gruplayın (örn. Programlama, Frameworks, Araçlar). Yetkinliği ekledikten sonra Enter&apos;a basın.
+        Kategorilere göre gruplayın (Programlama, Frameworks, Araçlar). Enter&apos;a basın.
       </div>
+      <Tip label="ATS için yetenek ipuçları">
+        <ul style={{ margin: "4px 0 0 16px", padding: 0, lineHeight: 1.7 }}>
+          <li>Başvurduğun iş ilanındaki <b>anahtar kelimelerin aynısını</b> kullan (kısaltma değil tam ad).</li>
+          <li>Her kategoride <b>en az 3-5 yetenek</b> olsun — ATS puanı için kritik.</li>
+          <li>&quot;İletişim becerisi&quot; gibi <b>yumuşak becerileri</b> yetenekler bölümüne değil, deneyim açıklamalarına ekle.</li>
+          <li>Sürüm numaraları ekleyebilirsin: &quot;React 18&quot;, &quot;Node.js 20&quot;.</li>
+        </ul>
+      </Tip>
       <div className="skills-input">
         {cats.map((cat, i) => (
           <SkillCategoryRow
