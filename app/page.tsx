@@ -1,28 +1,41 @@
 // app/page.tsx — Ana uygulama
 "use client";
 
-import { useMemo } from "react";
-import type { CVData, Settings } from "@/lib/types";
-import {
-  DEFAULT_DATA,
-  DEFAULT_SETTINGS,
-  STORAGE_KEY,
-  SETTINGS_KEY,
-  FONT_OPTIONS,
-  ACCENT_OPTIONS,
-  LINE_HEIGHT_OPTIONS,
-} from "@/lib/defaultData";
+import { useEffect, useMemo } from "react";
+import type { Settings } from "@/lib/types";
+import { DEFAULT_SETTINGS, SETTINGS_KEY, FONT_OPTIONS, ACCENT_OPTIONS, LINE_HEIGHT_OPTIONS } from "@/lib/defaultData";
 import { computeAtsScore } from "@/lib/atsScore";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useDocuments } from "@/hooks/useDocuments";
+import { useHistory } from "@/hooks/useHistory";
 import CVForm from "@/components/form/CVForm";
 import PreviewPane from "@/components/PreviewPane";
 import SettingsPanel from "@/components/SettingsPanel";
 
 export default function Page() {
-  const [data, setData] = useLocalStorage<CVData>(STORAGE_KEY, DEFAULT_DATA);
+  const docsMgr = useDocuments();
   const [settings, setSettings] = useLocalStorage<Settings>(SETTINGS_KEY, DEFAULT_SETTINGS);
 
-  const patchSettings = (patch: Partial<Settings>) => setSettings((prev) => ({ ...prev, ...patch }));
+  const patchSettings = (patch: Partial<Settings>) =>
+    setSettings((prev) => ({ ...prev, ...patch }));
+
+  const { data, setData, undo, redo, canUndo, canRedo } = useHistory(
+    docsMgr.activeData,
+    docsMgr.setActiveData,
+    docsMgr.activeId,
+  );
+
+  // Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z klavye kısayolları
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const mod = e.ctrlKey || e.metaKey;
+      if (!mod) return;
+      if (e.key === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
+      if ((e.key === "y") || (e.key === "z" && e.shiftKey)) { e.preventDefault(); redo(); }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [undo, redo]);
 
   const score = useMemo(() => computeAtsScore(data), [data]);
   const font = FONT_OPTIONS.find((f) => f.id === settings.fontId) || FONT_OPTIONS[0];
@@ -31,7 +44,23 @@ export default function Page() {
 
   return (
     <div className="app">
-      <CVForm data={data} setData={(d) => setData(d)} settings={settings} setSettings={patchSettings} />
+      <CVForm
+        data={data}
+        setData={setData}
+        settings={settings}
+        setSettings={patchSettings}
+        docs={docsMgr.docs}
+        activeId={docsMgr.activeId}
+        switchDoc={docsMgr.switchDoc}
+        createDoc={docsMgr.createDoc}
+        duplicateDoc={docsMgr.duplicateDoc}
+        deleteDoc={docsMgr.deleteDoc}
+        renameDoc={docsMgr.renameDoc}
+        undo={undo}
+        redo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
+      />
       <PreviewPane
         data={data}
         settings={settings}
