@@ -71,11 +71,3 @@ lib/
   bir sayfaya sığmazsa tamamen sonraki A4'e iner (başlık asla yalnız kalmaz).
 - `pdf.ts` ve `html2canvas` yalnızca tarayıcıda çalışır; `dynamic import` ile
   yüklenir, SSR'ı etkilemez.
-
-## Sonraki adımlar (öneri)
-
-- Birden fazla CV kaydetme + şablon galerisi
-- Kullanıcı hesapları (NextAuth) ve bulut senkronizasyonu
-- Paylaşılabilir herkese açık CV linkleri (`/cv/[id]`)
-- Sunucu tarafı PDF (`@react-pdf/renderer` veya Puppeteer)
-- İngilizce / Türkçe dil değiştirici (i18n)
