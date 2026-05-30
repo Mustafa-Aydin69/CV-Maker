@@ -421,11 +421,47 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
       doc.text(hobbies.join("  ·  "), M_L, state.y + 3);
       state.y += lineH + 1;
     },
+    volunteer: () => {
+      const vols = (data.volunteers ?? []).filter((v) => v.role);
+      if (!vols.length) return;
+      section("Gönüllülük", 6.1);
+      for (const it of vols) {
+        const sub = [it.organization, it.location].filter(Boolean);
+        drawItemHead(it.role, sub.length ? " · " + sub.join(" · ") : "", dr(it.start, it.end, it.current));
+        drawBullets(it.description, M_L, CONTENT_W);
+        state.y += 1.5;
+      }
+    },
+    references: () => {
+      const refs = (data.references ?? []).filter((r) => r.name);
+      if (!refs.length) return;
+      section("Referanslar", 6.1);
+      for (const it of refs) {
+        const sub = [it.title, it.company].filter(Boolean).join(", ");
+        drawItemHead(it.name, sub ? " · " + sub : "", [it.email, it.phone].filter(Boolean).join(" · "));
+        if (it.note) { setF(sc(9), "italic"); setColor(100,100,100); doc.text(it.note, M_L, state.y + 2.5); state.y += 3.5; }
+        state.y += 1;
+      }
+    },
   };
 
   const visibleSections = sectionOrder.filter((id) => !hiddenSections.includes(id));
   for (const id of visibleSections) {
     sectionRenderers[id]?.();
+  }
+
+  // Özel bölümler
+  for (const cs of (data.customSections ?? []).filter((c) => c.title)) {
+    section(cs.title);
+    if (cs.content.trim()) {
+      const items = cs.content.split("\n").map(l => l.trim()).filter(Boolean);
+      if (items.length === 1) {
+        drawWrapped(items[0], M_L, CONTENT_W, sc(9.5));
+      } else {
+        drawBullets(cs.content, M_L, CONTENT_W);
+      }
+    }
+    state.y += 1;
   }
 
   doc.setProperties({

@@ -135,6 +135,7 @@ export function useDocuments() {
     activeId: state.activeId,
     activeDoc,
     activeData,
+    lastSavedAt: activeDoc?.updatedAt ?? 0,
     setActiveData,
     switchDoc,
     createDoc,

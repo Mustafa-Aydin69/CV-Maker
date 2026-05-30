@@ -1,6 +1,6 @@
 // components/cv/items.tsx — CV başlığı ve madde bileşenleri
 import type { ReactNode } from "react";
-import type { CVData, Experience, Education, Project, Certification, Award } from "@/lib/types";
+import type { CVData, Experience, Education, Project, Certification, Award, Volunteer, Reference } from "@/lib/types";
 import { dateRange, fmtMonth } from "@/lib/format";
 import { ICON } from "./Icons";
 
@@ -130,6 +130,41 @@ export function AwardItem({ it }: { it: Award }) {
         {date && <span className="cv__item-meta">{date}</span>}
       </div>
       {it.note && <div className="cv__item-desc">{it.note}</div>}
+    </div>
+  );
+}
+
+export function VolunteerItem({ it }: { it: Volunteer }) {
+  const range = dateRange(it.start, it.end, it.current);
+  return (
+    <div className="cv__item">
+      <div className="cv__item-head">
+        <div>
+          <span className="cv__item-title">{it.role || "Gönüllü Rol"}</span>
+          {it.organization && <span className="cv__item-sub"> · {it.organization}</span>}
+          {it.location && <span className="cv__item-sub" style={{ color:"#666" }}> · {it.location}</span>}
+        </div>
+        {range && <span className="cv__item-meta">{range}</span>}
+      </div>
+      <Bullets text={it.description} />
+    </div>
+  );
+}
+
+export function ReferenceItem({ it }: { it: Reference }) {
+  return (
+    <div className="cv__item">
+      <div className="cv__item-head">
+        <div>
+          <span className="cv__item-title">{it.name || "Referans"}</span>
+          {it.title   && <span className="cv__item-sub"> · {it.title}</span>}
+          {it.company && <span className="cv__item-sub" style={{ color:"#666" }}> · {it.company}</span>}
+        </div>
+        {(it.email || it.phone) && (
+          <span className="cv__item-meta">{[it.email, it.phone].filter(Boolean).join(" · ")}</span>
+        )}
+      </div>
+      {it.note && <div className="cv__item-desc" style={{ fontStyle:"italic", color:"#666" }}>{it.note}</div>}
     </div>
   );
 }

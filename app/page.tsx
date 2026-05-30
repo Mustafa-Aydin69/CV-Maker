@@ -67,6 +67,8 @@ export default function Page() {
         redo={redo}
         canUndo={canUndo}
         canRedo={canRedo}
+        score={score}
+        lastSavedAt={docsMgr.lastSavedAt}
       />
       <PreviewPane
         data={data}

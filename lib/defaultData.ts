@@ -60,6 +60,9 @@ export const DEFAULT_DATA: CVData = {
   ],
   languages: ["İngilizce (C1)", "Almanca (A2)"],
   hobbies:   ["Açık kaynak geliştirme", "Satranç", "Trekking"],
+  volunteers: [],
+  references: [],
+  customSections: [],
 };
 
 export const EMPTY_DATA: CVData = {
@@ -69,6 +72,7 @@ export const EMPTY_DATA: CVData = {
   experience:[], education:[], projects:[], certifications:[], awards:[],
   skills:[{ _id: 1, name: "Diller", items:[] }],
   languages:[], hobbies:[],
+  volunteers:[], references:[], customSections:[],
 };
 
 // ── Font seçenekleri ──────────────────────────────────────────────────────────
@@ -125,6 +129,8 @@ export const SECTION_DEFS = [
   { id:"skills",         label:"Yetenekler"                  },
   { id:"languages",      label:"Yabancı Diller"              },
   { id:"hobbies",        label:"Hobiler / İlgi Alanları"     },
+  { id:"volunteer",      label:"Gönüllülük / Sosyal Sorumluluk" },
+  { id:"references",     label:"Referanslar"                 },
 ] as const;
 
 export const DEFAULT_SECTION_ORDER: string[] = SECTION_DEFS.map((s) => s.id);

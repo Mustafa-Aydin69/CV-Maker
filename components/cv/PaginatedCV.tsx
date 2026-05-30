@@ -6,7 +6,7 @@ import {
   Fragment, type ReactNode, type CSSProperties,
 } from "react";
 import type { CVData, PreviewOptions } from "@/lib/types";
-import { CVHeader, ExperienceItem, EducationItem, ProjectItem, CertificationItem, AwardItem } from "./items";
+import { CVHeader, ExperienceItem, EducationItem, ProjectItem, CertificationItem, AwardItem, VolunteerItem, ReferenceItem } from "./items";
 
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
@@ -95,10 +95,39 @@ function buildBlocks(
           addSection("Hobiler", [<div key="hobs">{hobs.join(" · ")}</div>]);
         break;
       }
+      case "volunteer": {
+        const vols = (data.volunteers ?? []).filter((v) => v.role);
+        if (vols.length)
+          addSection("Gönüllülük", vols.map((it) => <VolunteerItem key={it._id} it={it} />));
+        break;
+      }
+      case "references": {
+        const refs = (data.references ?? []).filter((r) => r.name);
+        if (refs.length)
+          addSection("Referanslar", refs.map((it) => <ReferenceItem key={it._id} it={it} />));
+        break;
+      }
     }
   }
 
+  // Özel bölümler — her zaman sona eklenir
+  for (const cs of (data.customSections ?? []).filter((c) => c.title)) {
+    addSection(cs.title, [<Bullets key="cs" text={cs.content} />]);
+  }
+
   return blocks;
+}
+
+// Özel bölüm içeriği için basit bullet bileşeni
+function Bullets({ text }: { text: string }) {
+  if (!text?.trim()) return null;
+  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+  if (lines.length === 1) return <div className="cv__item-desc">{lines[0]}</div>;
+  return (
+    <div className="cv__item-desc">
+      <ul>{lines.map((l, i) => <li key={i}>{l}</li>)}</ul>
+    </div>
+  );
 }
 
 export default function PaginatedCV({ data, options }: { data: CVData; options: PreviewOptions }) {

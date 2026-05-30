@@ -1,103 +1,60 @@
 // lib/types.ts — Tüm CV veri tipleri
 
-export interface LineHeightOption {
-  id: string;
-  label: string;
-  val: string;
-}
-
-export interface MarginOption {
-  id: string;
-  label: string;
-  px: number;  // CV ekranında padding (px)
-  mm: number;  // PDF'te kenar boşluğu (mm)
-}
+export interface LineHeightOption { id: string; label: string; val: string; }
+export interface MarginOption      { id: string; label: string; px: number; mm: number; }
 
 export interface Experience {
-  _id: number;
-  role: string;
-  company: string;
-  location: string;
-  start: string;
-  end: string;
-  current: boolean;
-  description: string;
+  _id: number; role: string; company: string; location: string;
+  start: string; end: string; current: boolean; description: string;
 }
-
 export interface Education {
-  _id: number;
-  school: string;
-  degree: string;
-  field: string;
-  start: string;
-  end: string;
-  gpa: string;
-  notes: string;
+  _id: number; school: string; degree: string; field: string;
+  start: string; end: string; gpa: string; notes: string;
 }
-
 export interface Project {
-  _id: number;
-  name: string;
-  stack: string;
-  link: string;
-  description: string;
+  _id: number; name: string; stack: string; link: string; description: string;
 }
-
 export interface Certification {
-  _id: number;
-  name: string;
-  issuer: string;
-  date: string;
-  link: string;
+  _id: number; name: string; issuer: string; date: string; link: string;
 }
-
 export interface Award {
-  _id: number;
-  title: string;
-  issuer: string;
-  date: string;
-  note: string;
+  _id: number; title: string; issuer: string; date: string; note: string;
 }
-
+export interface Volunteer {
+  _id: number; role: string; organization: string; location: string;
+  start: string; end: string; current: boolean; description: string;
+}
+export interface Reference {
+  _id: number; name: string; title: string; company: string;
+  email: string; phone: string; note: string;
+}
+export interface CustomSection {
+  _id: number; title: string; content: string;
+}
 export interface SkillCategory {
-  _id: number;
-  name: string;
-  items: string[];
+  _id: number; name: string; items: string[];
 }
 
 export interface CVData {
-  firstName: string;
-  lastName: string;
-  title: string;
-  phone: string;
-  email: string;
-  address: string;
-  linkedin: string;
-  github: string;
-  website: string;
-  photo: string | null;
-  about: string;
+  firstName: string; lastName: string; title: string;
+  phone: string; email: string; address: string;
+  linkedin: string; github: string; website: string;
+  photo: string | null; about: string;
   experience: Experience[];
   education: Education[];
   projects: Project[];
   certifications: Certification[];
   awards: Award[];
+  volunteers: Volunteer[];
+  references: Reference[];
+  customSections: CustomSection[];
   skills: SkillCategory[];
   languages: string[];
   hobbies: string[];
 }
 
-export interface FontOption {
-  id: string;
-  label: string;
-  css: string;
-}
-
-export interface AccentOption {
-  id: string;
-  val: string;
-  label: string;
-}
+export interface FontOption   { id: string; label: string; css: string; }
+export interface AccentOption { id: string; val: string; label: string; }
 
 export interface Settings {
   showPhoto: boolean;
@@ -112,25 +69,11 @@ export interface Settings {
 }
 
 export interface PreviewOptions {
-  showPhoto: boolean;
-  font: string;
-  accent: string;
-  lineHeight: string;
-  zoom: number;
-  sectionOrder: string[];
-  hiddenSections: string[];
-  paddingPx: number;
-  fontScale: number;
+  showPhoto: boolean; font: string; accent: string;
+  lineHeight: string; zoom: number;
+  sectionOrder: string[]; hiddenSections: string[];
+  paddingPx: number; fontScale: number;
 }
 
-export interface AtsCheck {
-  ok: boolean;
-  label: string;
-}
-
-export interface AtsScore {
-  pct: number;
-  passed: number;
-  total: number;
-  checks: AtsCheck[];
-}
+export interface AtsCheck { ok: boolean; label: string; }
+export interface AtsScore { pct: number; passed: number; total: number; checks: AtsCheck[]; }

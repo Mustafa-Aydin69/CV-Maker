@@ -223,10 +223,40 @@ export async function exportDocx(
       children.push(sectionHead("Hobiler"));
       children.push(plain(hobbies.join("  ·  ")));
     },
+    volunteer: () => {
+      const vols = (data.volunteers ?? []).filter((v) => v.role);
+      if (!vols.length) return;
+      children.push(sectionHead("Gönüllülük"));
+      for (const it of vols) {
+        const sub = [it.organization, it.location].filter(Boolean).join(" · ");
+        children.push(itemHead(it.role, sub ? " · " + sub : "", dateRange(it.start, it.end, it.current), accentHex));
+        children.push(...bullets(it.description));
+        children.push(new Paragraph({ children: [], spacing: { after: 80 } }));
+      }
+    },
+    references: () => {
+      const refs = (data.references ?? []).filter((r) => r.name);
+      if (!refs.length) return;
+      children.push(sectionHead("Referanslar"));
+      for (const it of refs) {
+        const sub = [it.title, it.company].filter(Boolean).join(", ");
+        const contact = [it.email, it.phone].filter(Boolean).join(" · ");
+        children.push(itemHead(it.name, sub ? " · " + sub : "", contact, accentHex));
+        if (it.note) children.push(plain(it.note, { size: 17, color: "777777" }));
+        children.push(new Paragraph({ children: [], spacing: { after: 60 } }));
+      }
+    },
   };
 
   const visible = sectionOrder.filter((id) => !hiddenSections.includes(id));
   for (const id of visible) sectionRenderers[id]?.();
+
+  // Özel bölümler
+  for (const cs of (data.customSections ?? []).filter((c) => c.title)) {
+    children.push(sectionHead(cs.title));
+    children.push(...bullets(cs.content));
+    children.push(new Paragraph({ children: [], spacing: { after: 80 } }));
+  }
 
   // ── Belge ──────────────────────────────────────────────────────────────────
   const doc = new Document({

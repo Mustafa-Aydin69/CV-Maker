@@ -1,7 +1,7 @@
 // components/form/CVForm.tsx — Sol panelin tamamı
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import type { CVData, Settings } from "@/lib/types";
 import { DEFAULT_DATA, EMPTY_DATA, FONT_OPTIONS, ACCENT_OPTIONS, LINE_HEIGHT_OPTIONS } from "@/lib/defaultData";
 import type { CVDocument } from "@/hooks/useDocuments";
@@ -14,8 +14,34 @@ import CertificationsSection from "./CertificationsSection";
 import AwardsSection from "./AwardsSection";
 import HobbiesSection from "./HobbiesSection";
 import JobMatchPanel from "./JobMatchPanel";
+import VolunteerSection from "./VolunteerSection";
+import ReferencesSection from "./ReferencesSection";
+import CustomSectionsPanel from "./CustomSectionsPanel";
+import type { AtsScore } from "@/lib/types";
 
 // ── İkonlar ──────────────────────────────────────────────────────────────────
+
+// ── Kayıt göstergesi hook'u ───────────────────────────────────────────────────
+
+function useSaveLabel(lastSavedAt: number): string {
+  const [label, setLabel] = useState("");
+
+  useEffect(() => {
+    if (!lastSavedAt) return;
+    const update = () => {
+      const s = Math.floor((Date.now() - lastSavedAt) / 1000);
+      if (s < 5)  setLabel("Az önce kaydedildi");
+      else if (s < 60)  setLabel(`${s} sn önce kaydedildi`);
+      else if (s < 3600) setLabel(`${Math.floor(s / 60)} dk önce kaydedildi`);
+      else setLabel("Kaydedildi");
+    };
+    update();
+    const id = setInterval(update, 10000);
+    return () => clearInterval(id);
+  }, [lastSavedAt]);
+
+  return label;
+}
 
 // ── Stil Paneli ──────────────────────────────────────────────────────────────
 
@@ -210,13 +236,8 @@ const TrashIcon = () => (
 // ── Belge Çubuğu ─────────────────────────────────────────────────────────────
 
 function DocBar({
-  docs,
-  activeId,
-  switchDoc,
-  createDoc,
-  duplicateDoc,
-  deleteDoc,
-  renameDoc,
+  docs, activeId, switchDoc, createDoc, duplicateDoc, deleteDoc, renameDoc,
+  score, saveLabel,
 }: {
   docs: CVDocument[];
   activeId: string;
@@ -225,6 +246,8 @@ function DocBar({
   duplicateDoc: () => void;
   deleteDoc: (id: string) => void;
   renameDoc: (id: string, name: string) => void;
+  score: AtsScore;
+  saveLabel: string;
 }) {
   const activeDoc = docs.find((d) => d.id === activeId);
   const [renaming, setRenaming] = useState(false);
@@ -242,6 +265,7 @@ function DocBar({
   };
 
   return (
+    <>
     <div className="doc-bar">
       <div className="doc-bar__left">
         {renaming ? (
@@ -296,7 +320,21 @@ function DocBar({
         )}
         <span className="doc-bar__count">{docs.length} CV</span>
       </div>
+      {saveLabel && (
+        <span className="doc-bar__saved">{saveLabel}</span>
+      )}
     </div>
+    {/* ATS tamamlanma çubuğu */}
+    <div className="progress-bar">
+      <div
+        className="progress-bar__fill"
+        style={{
+          width: `${score.pct}%`,
+          background: score.pct >= 80 ? "#1f7a44" : score.pct >= 50 ? "#d9a020" : "#c4322a",
+        }}
+      />
+    </div>
+    </>
   );
 }
 
@@ -318,6 +356,8 @@ export default function CVForm({
   redo,
   canUndo,
   canRedo,
+  score,
+  lastSavedAt,
 }: {
   data: CVData;
   setData: (d: CVData) => void;
@@ -334,6 +374,8 @@ export default function CVForm({
   redo: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  score: AtsScore;
+  lastSavedAt: number;
 }) {
   const importRef = useRef<HTMLInputElement>(null);
 
@@ -411,6 +453,8 @@ export default function CVForm({
         duplicateDoc={duplicateDoc}
         deleteDoc={deleteDoc}
         renameDoc={renameDoc}
+        score={score}
+        saveLabel={useSaveLabel(lastSavedAt)}
       />
 
       {/* ── Görsel Stil Paneli ── */}
@@ -425,9 +469,12 @@ export default function CVForm({
         <ProjectsSection       data={data} setData={setData} />
         <CertificationsSection data={data} setData={setData} />
         <AwardsSection         data={data} setData={setData} />
+        <VolunteerSection      data={data} setData={setData} />
+        <ReferencesSection     data={data} setData={setData} />
         <SkillsSection         data={data} setData={setData} />
         <LanguagesSection      data={data} setData={setData} />
         <HobbiesSection        data={data} setData={setData} />
+        <CustomSectionsPanel   data={data} setData={setData} />
         <JobMatchPanel         data={data} />
 
         <div style={{ margin: "18px 12px", display: "flex", gap: 8, flexWrap: "wrap" }}>
