@@ -64,12 +64,31 @@ export const DEFAULT_DATA: CVData = {
         "Açık kaynak form builder; 1.2k GitHub yıldızı\nDrag-drop editör ve gerçek zamanlı işbirliği özellikleri",
     },
   ],
+  certifications: [
+    {
+      _id: 41,
+      name: "AWS Certified Solutions Architect",
+      issuer: "Amazon Web Services",
+      date: "2023-04",
+      link: "aws.amazon.com/certification",
+    },
+  ],
+  awards: [
+    {
+      _id: 51,
+      title: "Yılın En İyi Geliştirici",
+      issuer: "Trendyol",
+      date: "2023-12",
+      note: "200+ geliştirici arasından seçildi",
+    },
+  ],
   skills: [
     { _id: 31, name: "Diller", items: ["JavaScript", "TypeScript", "Python", "SQL", "HTML/CSS"] },
     { _id: 32, name: "Frameworks & Kütüphaneler", items: ["React", "Next.js", "Vue", "Redux", "TailwindCSS", "Node.js"] },
     { _id: 33, name: "Araçlar", items: ["Git", "Docker", "Figma", "Jest", "Cypress", "Storybook"] },
   ],
   languages: ["İngilizce (C1)", "Almanca (A2)"],
+  hobbies: ["Açık kaynak geliştirme", "Satranç", "Trekking"],
 };
 
 export const EMPTY_DATA: CVData = {
@@ -88,15 +107,18 @@ export const EMPTY_DATA: CVData = {
   experience: [],
   education: [],
   projects: [],
+  certifications: [],
+  awards: [],
   skills: [{ _id: 1, name: "Diller", items: [] }],
   languages: [],
+  hobbies: [],
 };
 
 export const FONT_OPTIONS: FontOption[] = [
   // Sistem fontları — ATS güvenli
-  { id: "helvetica", label: "Helvetica (ATS önerilen)", css: '"Helvetica Neue", Helvetica, Arial, sans-serif' },
-  { id: "arial",     label: "Arial",                    css: 'Arial, "Helvetica Neue", sans-serif' },
-  { id: "calibri",   label: "Calibri",                  css: 'Calibri, Candara, Segoe, "Segoe UI", Optima, Arial, sans-serif' },
+  { id: "helvetica",   label: "Helvetica (ATS önerilen)", css: '"Helvetica Neue", Helvetica, Arial, sans-serif' },
+  { id: "arial",       label: "Arial",                    css: 'Arial, "Helvetica Neue", sans-serif' },
+  { id: "calibri",     label: "Calibri",                  css: 'Calibri, Candara, Segoe, "Segoe UI", Optima, Arial, sans-serif' },
   // Google Fonts — Sans-serif
   { id: "inter",       label: "Inter (Modern Sans)",      css: '"Inter", ui-sans-serif, system-ui, sans-serif' },
   { id: "roboto",      label: "Roboto (Teknik)",           css: '"Roboto", Arial, sans-serif' },
@@ -121,11 +143,11 @@ export const LINE_HEIGHT_OPTIONS: LineHeightOption[] = [
 ];
 
 export const ACCENT_OPTIONS: AccentOption[] = [
-  { id: "mono",   val: "#1a1a1a", label: "Klasik"    },
-  { id: "navy",   val: "#1d3f87", label: "Lacivert"  },
-  { id: "forest", val: "#1f6f43", label: "Orman"     },
-  { id: "wine",   val: "#7a1f3c", label: "Şarap"     },
-  { id: "steel",  val: "#475569", label: "Çelik"     },
+  { id: "mono",   val: "#1a1a1a", label: "Klasik"   },
+  { id: "navy",   val: "#1d3f87", label: "Lacivert" },
+  { id: "forest", val: "#1f6f43", label: "Orman"    },
+  { id: "wine",   val: "#7a1f3c", label: "Şarap"    },
+  { id: "steel",  val: "#475569", label: "Çelik"    },
 ];
 
 export const DEFAULT_SETTINGS: Settings = {

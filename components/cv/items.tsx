@@ -1,7 +1,7 @@
 // components/cv/items.tsx — CV başlığı ve madde bileşenleri
 import type { ReactNode } from "react";
-import type { CVData, Experience, Education, Project } from "@/lib/types";
-import { dateRange } from "@/lib/format";
+import type { CVData, Experience, Education, Project, Certification, Award } from "@/lib/types";
+import { dateRange, fmtMonth } from "@/lib/format";
 import { ICON } from "./Icons";
 
 export function Bullets({ text }: { text: string }) {
@@ -24,12 +24,12 @@ export function CVHeader({ data, showPhoto }: { data: CVData; showPhoto: boolean
   const fullName = [data.firstName, data.lastName].filter(Boolean).join(" ") || "Ad Soyad";
   const hasPhoto = showPhoto && !!data.photo;
   const contacts: Array<{ icon: ReactNode; val: string }> = [
-    data.address && { icon: ICON.address, val: data.address },
-    data.phone && { icon: ICON.phone, val: data.phone },
-    data.email && { icon: ICON.email, val: data.email },
+    data.address  && { icon: ICON.address,  val: data.address  },
+    data.phone    && { icon: ICON.phone,    val: data.phone    },
+    data.email    && { icon: ICON.email,    val: data.email    },
     data.linkedin && { icon: ICON.linkedin, val: data.linkedin },
-    data.github && { icon: ICON.github, val: data.github },
-    data.website && { icon: ICON.web, val: data.website },
+    data.github   && { icon: ICON.github,   val: data.github   },
+    data.website  && { icon: ICON.web,      val: data.website  },
   ].filter(Boolean) as Array<{ icon: ReactNode; val: string }>;
 
   return (
@@ -42,9 +42,7 @@ export function CVHeader({ data, showPhoto }: { data: CVData; showPhoto: boolean
         {contacts.map((c, i) => (
           <div key={i} className="cv__contact-row">
             <span className="cv__contact-val">{c.val}</span>
-            <span className="cv__contact-ic" aria-hidden="true">
-              {c.icon}
-            </span>
+            <span className="cv__contact-ic" aria-hidden="true">{c.icon}</span>
           </div>
         ))}
       </div>
@@ -61,13 +59,8 @@ export function ExperienceItem({ it }: { it: Experience }) {
       <div className="cv__item-head">
         <div>
           <span className="cv__item-title">{it.role || "Pozisyon"}</span>
-          {it.company && <span className="cv__item-sub"> · {it.company}</span>}
-          {it.location && (
-            <span className="cv__item-sub" style={{ color: "#666" }}>
-              {" "}
-              · {it.location}
-            </span>
-          )}
+          {it.company  && <span className="cv__item-sub"> · {it.company}</span>}
+          {it.location && <span className="cv__item-sub" style={{ color: "#666" }}> · {it.location}</span>}
         </div>
         {range && <span className="cv__item-meta">{range}</span>}
       </div>
@@ -85,12 +78,7 @@ export function EducationItem({ it }: { it: Education }) {
         <div>
           <span className="cv__item-title">{it.school || "Okul"}</span>
           {degLine && <span className="cv__item-sub"> · {degLine}</span>}
-          {it.gpa && (
-            <span className="cv__item-sub" style={{ color: "#666" }}>
-              {" "}
-              · GPA {it.gpa}
-            </span>
-          )}
+          {it.gpa && <span className="cv__item-sub" style={{ color: "#666" }}> · GPA {it.gpa}</span>}
         </div>
         {range && <span className="cv__item-meta">{range}</span>}
       </div>
@@ -107,13 +95,41 @@ export function ProjectItem({ it }: { it: Project }) {
           <span className="cv__item-title">{it.name || "Proje"}</span>
           {it.stack && <span className="cv__item-sub"> · {it.stack}</span>}
         </div>
-        {it.link && (
-          <span className="cv__item-meta" style={{ fontStyle: "italic" }}>
-            {it.link}
-          </span>
-        )}
+        {it.link && <span className="cv__item-meta" style={{ fontStyle: "italic" }}>{it.link}</span>}
       </div>
       <Bullets text={it.description} />
+    </div>
+  );
+}
+
+export function CertificationItem({ it }: { it: Certification }) {
+  const date = fmtMonth(it.date);
+  return (
+    <div className="cv__item">
+      <div className="cv__item-head">
+        <div>
+          <span className="cv__item-title">{it.name || "Sertifika"}</span>
+          {it.issuer && <span className="cv__item-sub"> · {it.issuer}</span>}
+        </div>
+        {date && <span className="cv__item-meta">{date}</span>}
+      </div>
+      {it.link && <div className="cv__item-desc" style={{ fontSize: "9.5pt", color: "#666" }}>{it.link}</div>}
+    </div>
+  );
+}
+
+export function AwardItem({ it }: { it: Award }) {
+  const date = fmtMonth(it.date);
+  return (
+    <div className="cv__item">
+      <div className="cv__item-head">
+        <div>
+          <span className="cv__item-title">{it.title || "Ödül"}</span>
+          {it.issuer && <span className="cv__item-sub"> · {it.issuer}</span>}
+        </div>
+        {date && <span className="cv__item-meta">{date}</span>}
+      </div>
+      {it.note && <div className="cv__item-desc">{it.note}</div>}
     </div>
   );
 }

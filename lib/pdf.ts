@@ -343,6 +343,52 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
     }
   }
 
+  // ── SERTİFİKALAR ──────────────────────────────────────────────────
+  const certs = (data.certifications ?? []).filter((c) => c.name);
+  if (certs.length) {
+    const predictCert = () => 4.6 + 1.5;
+    section("Sertifikalar", predictCert());
+    for (const it of certs) {
+      ensureSpace(predictCert());
+      const date = it.date ? (() => {
+        const [y, m] = it.date.split("-");
+        const mi = parseInt(m, 10) - 1;
+        const months = ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
+        return isNaN(mi) || mi < 0 || mi > 11 ? it.date : `${months[mi]} ${y}`;
+      })() : "";
+      drawItemHead(it.name || "Sertifika", it.issuer ? " · " + it.issuer : "", date);
+      if (it.link) {
+        setF(9, "italic");
+        setColor(100, 100, 100);
+        doc.text(it.link, M_L, state.y + 2.5);
+        state.y += 3.5;
+      }
+      state.y += 1;
+    }
+  }
+
+  // ── ÖDÜLLER ───────────────────────────────────────────────────────
+  const awds = (data.awards ?? []).filter((a) => a.title);
+  if (awds.length) {
+    const predictAward = (a: typeof awds[number]) => 4.6 + (a.note ? predictWrapped(a.note) : 0) + 1.5;
+    section("Ödüller", predictAward(awds[0]));
+    for (const it of awds) {
+      ensureSpace(predictAward(it));
+      const date = it.date ? (() => {
+        const [y, m] = it.date.split("-");
+        const mi = parseInt(m, 10) - 1;
+        const months = ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
+        return isNaN(mi) || mi < 0 || mi > 11 ? it.date : `${months[mi]} ${y}`;
+      })() : "";
+      drawItemHead(it.title || "Ödül", it.issuer ? " · " + it.issuer : "", date);
+      if (it.note) {
+        setColor(60, 60, 60);
+        drawWrapped(it.note, M_L, CONTENT_W, 9.5);
+      }
+      state.y += 1.5;
+    }
+  }
+
   // ── YETENEKLER ────────────────────────────────────────────────────
   const skillCats = data.skills.filter((c) => c.items.length > 0);
   if (skillCats.length) {
@@ -366,6 +412,30 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
       });
       state.y += lineH + 0.5;
     }
+  }
+
+  // ── YABANCI DİLLER ────────────────────────────────────────────────
+  const langs = (data.languages ?? []).filter(Boolean);
+  if (langs.length) {
+    section("Yabancı Diller");
+    setF(9.5, "normal");
+    setColor(40, 40, 40);
+    const lineH = lh(9.5, 1.35);
+    ensureSpace(lineH);
+    doc.text(langs.join("  ·  "), M_L, state.y + 3);
+    state.y += lineH + 1;
+  }
+
+  // ── HOBİLER ───────────────────────────────────────────────────────
+  const hobbies = (data.hobbies ?? []).filter(Boolean);
+  if (hobbies.length) {
+    section("Hobiler");
+    setF(9.5, "normal");
+    setColor(40, 40, 40);
+    const lineH = lh(9.5, 1.35);
+    ensureSpace(lineH);
+    doc.text(hobbies.join("  ·  "), M_L, state.y + 3);
+    state.y += lineH + 1;
   }
 
   doc.setProperties({

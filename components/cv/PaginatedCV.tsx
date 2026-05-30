@@ -3,7 +3,7 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, Fragment, type ReactNode, type CSSProperties } from "react";
 import type { CVData, PreviewOptions } from "@/lib/types";
-import { CVHeader, ExperienceItem, EducationItem, ProjectItem } from "./items";
+import { CVHeader, ExperienceItem, EducationItem, ProjectItem, CertificationItem, AwardItem } from "./items";
 
 // SSR'da useLayoutEffect uyarısını önlemek için izomorfik varyant
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -47,6 +47,14 @@ function buildBlocks(data: CVData, showPhoto: boolean): Block[] {
   if (data.projects.length) {
     addSection("Projeler", data.projects.map((it) => <ProjectItem key={it._id} it={it} />));
   }
+  const certs = (data.certifications ?? []).filter((c) => c.name);
+  if (certs.length) {
+    addSection("Sertifikalar", certs.map((it) => <CertificationItem key={it._id} it={it} />));
+  }
+  const awards = (data.awards ?? []).filter((a) => a.title);
+  if (awards.length) {
+    addSection("Ödüller", awards.map((it) => <AwardItem key={it._id} it={it} />));
+  }
   const visibleSkills = data.skills.filter((c) => c.items.length > 0);
   if (visibleSkills.length) {
     addSection("Yetenekler", [
@@ -62,9 +70,11 @@ function buildBlocks(data: CVData, showPhoto: boolean): Block[] {
   }
   const langs = (data.languages ?? []).filter(Boolean);
   if (langs.length) {
-    addSection("Yabancı Diller", [
-      <div key="langs">{langs.join(" · ")}</div>,
-    ]);
+    addSection("Yabancı Diller", [<div key="langs">{langs.join(" · ")}</div>]);
+  }
+  const hobbies = (data.hobbies ?? []).filter(Boolean);
+  if (hobbies.length) {
+    addSection("Hobiler", [<div key="hobbies">{hobbies.join(" · ")}</div>]);
   }
   return blocks;
 }
@@ -81,10 +91,7 @@ export default function PaginatedCV({ data, options }: { data: CVData; options: 
     if (!c) return;
     const recompute = () => {
       const kids = Array.from(c.children) as HTMLElement[];
-      if (!kids.length) {
-        setPages([[]]);
-        return;
-      }
+      if (!kids.length) { setPages([[]]); return; }
       const heights = kids.map((el) => {
         const cs = getComputedStyle(el);
         return el.getBoundingClientRect().height + (parseFloat(cs.marginTop) || 0) + (parseFloat(cs.marginBottom) || 0);
@@ -94,11 +101,7 @@ export default function PaginatedCV({ data, options }: { data: CVData; options: 
       let curH = 0;
       for (let i = 0; i < heights.length; i++) {
         const h = heights[i];
-        if (cur.length && curH + h > PAGE_CONTENT_H) {
-          result.push(cur);
-          cur = [];
-          curH = 0;
-        }
+        if (cur.length && curH + h > PAGE_CONTENT_H) { result.push(cur); cur = []; curH = 0; }
         cur.push(i);
         curH += h;
       }
@@ -127,9 +130,7 @@ export default function PaginatedCV({ data, options }: { data: CVData; options: 
               ))}
             </div>
             {pages.length > 1 && (
-              <div className="cv-page__num">
-                {pi + 1} / {pages.length}
-              </div>
+              <div className="cv-page__num">{pi + 1} / {pages.length}</div>
             )}
           </div>
         ))}

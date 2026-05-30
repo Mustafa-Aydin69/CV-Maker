@@ -36,6 +36,22 @@ export interface Project {
   description: string;
 }
 
+export interface Certification {
+  _id: number;
+  name: string;
+  issuer: string;
+  date: string;   // "YYYY-MM"
+  link: string;
+}
+
+export interface Award {
+  _id: number;
+  title: string;
+  issuer: string;
+  date: string;   // "YYYY-MM"
+  note: string;
+}
+
 export interface SkillCategory {
   _id: number;
   name: string;
@@ -57,8 +73,11 @@ export interface CVData {
   experience: Experience[];
   education: Education[];
   projects: Project[];
+  certifications: Certification[];
+  awards: Award[];
   skills: SkillCategory[];
   languages: string[];
+  hobbies: string[];
 }
 
 export interface FontOption {
