@@ -113,7 +113,7 @@ export function CertificationItem({ it }: { it: Certification }) {
         </div>
         {date && <span className="cv__item-meta">{date}</span>}
       </div>
-      {it.link && <div className="cv__item-desc" style={{ fontSize: "9.5pt", color: "#666" }}>{it.link}</div>}
+      {it.link && <div className="cv__item-desc" style={{ fontSize: "0.905em", color: "#666" }}>{it.link}</div>}
     </div>
   );
 }
