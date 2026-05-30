@@ -19,7 +19,7 @@ function AtsBadge({ score }: { score: AtsScore }) {
 
 export default function PreviewPane({
   data, settings, setSettings, score, font, accent,
-  lineHeight, paddingPx, paddingMm, fontScale, sectionOrder, hiddenSections,
+  lineHeight, paddingPx, paddingMm, fontScale, sectionOrder, hiddenSections, template,
 }: {
   data: CVData;
   settings: Settings;
@@ -33,6 +33,7 @@ export default function PreviewPane({
   fontScale: number;
   sectionOrder: string[];
   hiddenSections: string[];
+  template: "classic" | "sidebar";
 }) {
   const [exporting,     setExporting]     = useState(false);
   const [exportingDocx, setExportingDocx] = useState(false);
@@ -112,6 +113,7 @@ export default function PreviewPane({
             hiddenSections,
             paddingPx,
             fontScale,
+            template,
           }}
         />
       </div>

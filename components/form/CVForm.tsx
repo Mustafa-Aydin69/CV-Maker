@@ -90,6 +90,16 @@ function StylePanel({
                 aria-label={a.label}
               />
             ))}
+            {/* Özel renk */}
+            <label
+              className={"sp-swatch sp-swatch--custom" + (settings.accentId === "custom" ? " is-active" : "")}
+              title="Özel renk seç"
+              style={{ background: settings.accentId === "custom" ? (settings.accentCustom ?? "#2563eb") : "conic-gradient(red,yellow,lime,aqua,blue,magenta,red)" }}
+            >
+              <input type="color" value={settings.accentCustom ?? "#2563eb"}
+                onChange={(e) => setSettings({ accentId: "custom", accentCustom: e.target.value })}
+                style={{ opacity:0, position:"absolute", width:0, height:0 }} />
+            </label>
           </div>
         </div>
       </div>
@@ -113,6 +123,22 @@ function StylePanel({
             value={settings.fontScale ?? 1}
             onChange={(e) => setSettings({ fontScale: parseFloat(e.target.value) })}
           />
+        </div>
+      </div>
+
+      {/* Şablon seçimi */}
+      <div className="template-row">
+        <span className="template-row__label">Şablon</span>
+        <div className="template-row__opts">
+          {(["classic", "sidebar"] as const).map((t) => (
+            <button
+              key={t}
+              className={"template-btn" + (settings.template === t ? " is-active" : "")}
+              onClick={() => setSettings({ template: t })}
+            >
+              {t === "classic" ? "Klasik" : "Şeritli"}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -204,6 +230,20 @@ const SlidersIcon = () => (
   <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
     <line x1="4" y1="6" x2="20" y2="6" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="18" x2="20" y2="18" />
     <circle cx="8" cy="6" r="2" fill="white" /><circle cx="16" cy="12" r="2" fill="white" /><circle cx="10" cy="18" r="2" fill="white" />
+  </svg>
+);
+const MoonIcon = () => (
+  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+);
+const SunIcon = () => (
+  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <circle cx="12" cy="12" r="5" />
+    <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+    <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
   </svg>
 );
 const UndoIcon = () => (
@@ -412,7 +452,7 @@ export default function CVForm({
   };
 
   return (
-    <aside className="app__form">
+    <aside className="app__form" data-dark={settings.darkMode ? "true" : undefined}>
       {/* ── Üst çubuk ── */}
       <div className="topbar">
         <h1>
@@ -438,6 +478,14 @@ export default function CVForm({
             aria-label="Yinele"
           >
             <RedoIcon />
+          </button>
+          <button
+            className="icon-btn"
+            onClick={() => setSettings({ darkMode: !settings.darkMode })}
+            title={settings.darkMode ? "Açık mod" : "Koyu mod"}
+            aria-label="Tema değiştir"
+          >
+            {settings.darkMode ? <SunIcon /> : <MoonIcon />}
           </button>
           <button className="btn btn--ghost" onClick={clearAll} title="Tüm alanları boşalt">Temizle</button>
           <button className="btn btn--ghost" onClick={reset}    title="Örnek veriye dön">Sıfırla</button>

@@ -137,13 +137,16 @@ export const DEFAULT_SECTION_ORDER: string[] = SECTION_DEFS.map((s) => s.id);
 
 // ── Varsayılan ayarlar ────────────────────────────────────────────────────────
 export const DEFAULT_SETTINGS: Settings = {
-  showPhoto:    true,
-  fontId:       "helvetica",
-  accentId:     "mono",
-  lineHeightId: "normal",
-  zoom:         0.78,
-  sectionOrder: DEFAULT_SECTION_ORDER,
+  showPhoto:      true,
+  fontId:         "helvetica",
+  accentId:       "mono",
+  accentCustom:   "#2563eb",
+  lineHeightId:   "normal",
+  zoom:           0.78,
+  sectionOrder:   DEFAULT_SECTION_ORDER,
   hiddenSections: [],
-  marginId:     "normal",
-  fontScale:    1,
+  marginId:       "normal",
+  fontScale:      1,
+  template:       "classic",
+  darkMode:       false,
 };

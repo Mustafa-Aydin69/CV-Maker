@@ -48,6 +48,12 @@ export default function Page() {
   const sectionOrder   = settings.sectionOrder   ?? DEFAULT_SECTION_ORDER;
   const hiddenSections = settings.hiddenSections ?? [];
   const fontScale      = settings.fontScale      ?? 1;
+  const template       = settings.template       ?? "classic";
+
+  // Özel renk desteği
+  const resolvedAccent = settings.accentId === "custom"
+    ? { id: "custom", val: settings.accentCustom ?? "#2563eb", label: "Özel" }
+    : accent;
 
   return (
     <div className="app">
@@ -76,13 +82,14 @@ export default function Page() {
         setSettings={patchSettings}
         score={score}
         font={font}
-        accent={accent}
+        accent={resolvedAccent}
         lineHeight={lineHeight}
         paddingPx={margin.px}
         paddingMm={margin.mm}
         fontScale={fontScale}
         sectionOrder={sectionOrder}
         hiddenSections={hiddenSections}
+        template={template}
       />
       <SettingsPanel settings={settings} setSettings={patchSettings} score={score} />
     </div>

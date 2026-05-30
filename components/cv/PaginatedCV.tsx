@@ -7,6 +7,7 @@ import {
 } from "react";
 import type { CVData, PreviewOptions } from "@/lib/types";
 import { CVHeader, ExperienceItem, EducationItem, ProjectItem, CertificationItem, AwardItem, VolunteerItem, ReferenceItem } from "./items";
+import SidebarCV from "./SidebarCV";
 
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
@@ -131,6 +132,13 @@ function Bullets({ text }: { text: string }) {
 }
 
 export default function PaginatedCV({ data, options }: { data: CVData; options: PreviewOptions }) {
+  if (options.template === "sidebar") {
+    return <SidebarCV data={data} options={options} />;
+  }
+  return <ClassicCV data={data} options={options} />;
+}
+
+function ClassicCV({ data, options }: { data: CVData; options: PreviewOptions }) {
   const { showPhoto, font, accent, lineHeight, zoom, sectionOrder, hiddenSections, paddingPx, fontScale } = options;
 
   const cvStyle = {

@@ -60,12 +60,15 @@ export interface Settings {
   showPhoto: boolean;
   fontId: string;
   accentId: string;
+  accentCustom: string;
   lineHeightId: string;
   zoom: number;
   sectionOrder: string[];
   hiddenSections: string[];
   marginId: string;
   fontScale: number;
+  template: "classic" | "sidebar";
+  darkMode: boolean;
 }
 
 export interface PreviewOptions {
@@ -73,6 +76,7 @@ export interface PreviewOptions {
   lineHeight: string; zoom: number;
   sectionOrder: string[]; hiddenSections: string[];
   paddingPx: number; fontScale: number;
+  template: "classic" | "sidebar";
 }
 
 export interface AtsCheck { ok: boolean; label: string; }
