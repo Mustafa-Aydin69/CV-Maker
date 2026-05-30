@@ -1,12 +1,18 @@
 // lib/types.ts — Tüm CV veri tipleri
 
+export interface LineHeightOption {
+  id: string;
+  label: string;
+  val: string;
+}
+
 export interface Experience {
   _id: number;
   role: string;
   company: string;
   location: string;
-  start: string;   // "YYYY-MM"
-  end: string;     // "YYYY-MM"
+  start: string;
+  end: string;
   current: boolean;
   description: string;
 }
@@ -46,12 +52,13 @@ export interface CVData {
   linkedin: string;
   github: string;
   website: string;
-  photo: string | null; // data URL
+  photo: string | null;
   about: string;
   experience: Experience[];
   education: Education[];
   projects: Project[];
   skills: SkillCategory[];
+  languages: string[];
 }
 
 export interface FontOption {
@@ -70,6 +77,7 @@ export interface Settings {
   showPhoto: boolean;
   fontId: string;
   accentId: string;
+  lineHeightId: string;
   zoom: number;
 }
 
@@ -77,6 +85,7 @@ export interface PreviewOptions {
   showPhoto: boolean;
   font: string;
   accent: string;
+  lineHeight: string;
   zoom: number;
 }
 

@@ -3,7 +3,15 @@
 
 import { useMemo } from "react";
 import type { CVData, Settings } from "@/lib/types";
-import { DEFAULT_DATA, DEFAULT_SETTINGS, STORAGE_KEY, SETTINGS_KEY, FONT_OPTIONS, ACCENT_OPTIONS } from "@/lib/defaultData";
+import {
+  DEFAULT_DATA,
+  DEFAULT_SETTINGS,
+  STORAGE_KEY,
+  SETTINGS_KEY,
+  FONT_OPTIONS,
+  ACCENT_OPTIONS,
+  LINE_HEIGHT_OPTIONS,
+} from "@/lib/defaultData";
 import { computeAtsScore } from "@/lib/atsScore";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import CVForm from "@/components/form/CVForm";
@@ -19,10 +27,11 @@ export default function Page() {
   const score = useMemo(() => computeAtsScore(data), [data]);
   const font = FONT_OPTIONS.find((f) => f.id === settings.fontId) || FONT_OPTIONS[0];
   const accent = ACCENT_OPTIONS.find((a) => a.id === settings.accentId) || ACCENT_OPTIONS[0];
+  const lineHeight = LINE_HEIGHT_OPTIONS.find((l) => l.id === settings.lineHeightId)?.val ?? "1.45";
 
   return (
     <div className="app">
-      <CVForm data={data} setData={(d) => setData(d)} />
+      <CVForm data={data} setData={(d) => setData(d)} settings={settings} setSettings={patchSettings} />
       <PreviewPane
         data={data}
         settings={settings}
@@ -30,6 +39,7 @@ export default function Page() {
         score={score}
         font={font}
         accent={accent}
+        lineHeight={lineHeight}
       />
       <SettingsPanel settings={settings} setSettings={patchSettings} score={score} />
     </div>

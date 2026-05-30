@@ -60,12 +60,18 @@ function buildBlocks(data: CVData, showPhoto: boolean): Block[] {
       </div>,
     ]);
   }
+  const langs = (data.languages ?? []).filter(Boolean);
+  if (langs.length) {
+    addSection("Yabancı Diller", [
+      <div key="langs">{langs.join(" · ")}</div>,
+    ]);
+  }
   return blocks;
 }
 
 export default function PaginatedCV({ data, options }: { data: CVData; options: PreviewOptions }) {
-  const { showPhoto, font, accent, zoom } = options;
-  const cvStyle = { "--cv-font": font, "--cv-accent": accent } as CSSProperties;
+  const { showPhoto, font, accent, lineHeight, zoom } = options;
+  const cvStyle = { "--cv-font": font, "--cv-accent": accent, "--cv-line-height": lineHeight } as CSSProperties;
   const blocks = useMemo(() => buildBlocks(data, showPhoto), [data, showPhoto]);
   const measureRef = useRef<HTMLDivElement>(null);
   const [pages, setPages] = useState<number[][]>(() => [blocks.map((_, i) => i)]);
@@ -108,7 +114,7 @@ export default function PaginatedCV({ data, options }: { data: CVData; options: 
     const ro = new ResizeObserver(recompute);
     Array.from(c.children).forEach((ch) => ro.observe(ch));
     return () => ro.disconnect();
-  }, [blocks, font, accent, showPhoto]);
+  }, [blocks, font, accent, lineHeight, showPhoto]);
 
   return (
     <>

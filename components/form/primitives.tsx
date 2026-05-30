@@ -25,7 +25,11 @@ export function Section({
           <span>{title}</span>
           {count != null && <span className="section__count">{count}</span>}
         </div>
-        <span className="section__chev">›</span>
+        <span className="section__chev" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </span>
       </div>
       {open && <div className="section__bd">{children}</div>}
     </div>

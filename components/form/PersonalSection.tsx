@@ -5,6 +5,13 @@ import { useRef } from "react";
 import type { CVData } from "@/lib/types";
 import { Section, Field } from "./primitives";
 
+const PersonIcon = () => (
+  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 20c0-3.866 3.582-7 8-7s8 3.134 8 7" />
+  </svg>
+);
+
 export default function PersonalSection({
   data,
   setData,
@@ -24,7 +31,7 @@ export default function PersonalSection({
   };
 
   return (
-    <Section icon="👤" title="Kişisel Bilgiler">
+    <Section icon={<PersonIcon />} title="Kişisel Bilgiler">
       <div className="photo-row">
         <div className="photo-preview">
           {data.photo ? (

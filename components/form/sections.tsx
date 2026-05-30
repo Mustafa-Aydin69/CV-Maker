@@ -5,10 +5,40 @@ import type { CVData, Experience, Education, Project } from "@/lib/types";
 import { Section, Field } from "./primitives";
 import ListSection from "./ListSection";
 
+const EditIcon = () => (
+  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+  </svg>
+);
+
+const BriefcaseIcon = () => (
+  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <rect x="2" y="7" width="20" height="14" rx="2" />
+    <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+    <line x1="12" y1="12" x2="12.01" y2="12" strokeWidth="2.5" strokeLinecap="round" />
+  </svg>
+);
+
+const GraduationIcon = () => (
+  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <polygon points="12 2 22 8.5 12 15 2 8.5" />
+    <path d="M6 11.5V17c0 1.657 2.686 3 6 3s6-1.343 6-3v-5.5" />
+    <line x1="22" y1="8.5" x2="22" y2="14" />
+  </svg>
+);
+
+const CodeIcon = () => (
+  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <polyline points="16 18 22 12 16 6" />
+    <polyline points="8 6 2 12 8 18" />
+  </svg>
+);
+
 export function AboutSection({ data, setData }: { data: CVData; setData: (d: CVData) => void }) {
   const len = data.about?.length || 0;
   return (
-    <Section icon="✎" title="Hakkımda">
+    <Section icon={<EditIcon />} title="Profesyonel Özet / Hakkımda">
       <Field
         label="Profesyonel özet"
         hint={`${len} karakter — ATS için 50-150 kelime ideal. Anahtar yetkinlikleri vurgulayın.`}
@@ -27,8 +57,8 @@ export function AboutSection({ data, setData }: { data: CVData; setData: (d: CVD
 export function ExperienceSection({ data, setData }: { data: CVData; setData: (d: CVData) => void }) {
   return (
     <ListSection<Experience>
-      icon="💼"
-      title="Deneyim"
+      icon={<BriefcaseIcon />}
+      title="İş Deneyimleri"
       items={data.experience}
       setItems={(v) => setData({ ...data, experience: v })}
       factory={() => ({ role: "", company: "", location: "", start: "", end: "", current: false, description: "" })}
@@ -81,8 +111,8 @@ export function ExperienceSection({ data, setData }: { data: CVData; setData: (d
 export function EducationSection({ data, setData }: { data: CVData; setData: (d: CVData) => void }) {
   return (
     <ListSection<Education>
-      icon="🎓"
-      title="Eğitim"
+      icon={<GraduationIcon />}
+      title="Eğitim Bilgileri"
       items={data.education}
       setItems={(v) => setData({ ...data, education: v })}
       factory={() => ({ school: "", degree: "", field: "", start: "", end: "", gpa: "", notes: "" })}
@@ -123,7 +153,7 @@ export function EducationSection({ data, setData }: { data: CVData; setData: (d:
 export function ProjectsSection({ data, setData }: { data: CVData; setData: (d: CVData) => void }) {
   return (
     <ListSection<Project>
-      icon="🛠"
+      icon={<CodeIcon />}
       title="Projeler"
       items={data.projects}
       setItems={(v) => setData({ ...data, projects: v })}

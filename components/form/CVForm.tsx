@@ -2,18 +2,34 @@
 "use client";
 
 import { useRef } from "react";
-import type { CVData } from "@/lib/types";
-import { DEFAULT_DATA, EMPTY_DATA } from "@/lib/defaultData";
+import type { CVData, Settings } from "@/lib/types";
+import { DEFAULT_DATA, EMPTY_DATA, FONT_OPTIONS, ACCENT_OPTIONS, LINE_HEIGHT_OPTIONS } from "@/lib/defaultData";
 import PersonalSection from "./PersonalSection";
 import { AboutSection, ExperienceSection, EducationSection, ProjectsSection } from "./sections";
 import SkillsSection from "./SkillsSection";
+import LanguagesSection from "./LanguagesSection";
+
+const SlidersIcon = () => (
+  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <line x1="4" y1="6" x2="20" y2="6" />
+    <line x1="4" y1="12" x2="20" y2="12" />
+    <line x1="4" y1="18" x2="20" y2="18" />
+    <circle cx="8" cy="6" r="2" fill="white" />
+    <circle cx="16" cy="12" r="2" fill="white" />
+    <circle cx="10" cy="18" r="2" fill="white" />
+  </svg>
+);
 
 export default function CVForm({
   data,
   setData,
+  settings,
+  setSettings,
 }: {
   data: CVData;
   setData: (d: CVData) => void;
+  settings: Settings;
+  setSettings: (patch: Partial<Settings>) => void;
 }) {
   const importRef = useRef<HTMLInputElement>(null);
 
@@ -72,6 +88,48 @@ export default function CVForm({
           </button>
         </div>
       </div>
+
+      {/* ——— Görsel Stil Paneli ——— */}
+      <div className="style-panel">
+        <div className="style-panel__hd">
+          <SlidersIcon />
+          GÖRSEL STİL VE TİPOGRAFİ
+        </div>
+        <div className="style-panel__body">
+          <div className="style-panel__col">
+            <label>Tipografi</label>
+            <select value={settings.fontId} onChange={(e) => setSettings({ fontId: e.target.value })}>
+              {FONT_OPTIONS.map((f) => (
+                <option key={f.id} value={f.id}>{f.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="style-panel__col">
+            <label>Satır Boşluğu / Satır Aralığı</label>
+            <select value={settings.lineHeightId} onChange={(e) => setSettings({ lineHeightId: e.target.value })}>
+              {LINE_HEIGHT_OPTIONS.map((l) => (
+                <option key={l.id} value={l.id}>{l.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="style-panel__col">
+            <label>CV Vurgu Rengi</label>
+            <div className="style-panel__swatches">
+              {ACCENT_OPTIONS.map((a) => (
+                <button
+                  key={a.id}
+                  className={"sp-swatch" + (settings.accentId === a.id ? " is-active" : "")}
+                  style={{ background: a.val }}
+                  title={a.label}
+                  onClick={() => setSettings({ accentId: a.id })}
+                  aria-label={a.label}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="form">
         <PersonalSection data={data} setData={setData} />
         <AboutSection data={data} setData={setData} />
@@ -79,6 +137,7 @@ export default function CVForm({
         <EducationSection data={data} setData={setData} />
         <ProjectsSection data={data} setData={setData} />
         <SkillsSection data={data} setData={setData} />
+        <LanguagesSection data={data} setData={setData} />
 
         <div style={{ margin: "18px 12px", display: "flex", gap: 8, flexWrap: "wrap" }}>
           <input ref={importRef} type="file" accept="application/json" onChange={importJson} style={{ display: "none" }} />

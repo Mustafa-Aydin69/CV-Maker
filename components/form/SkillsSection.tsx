@@ -5,6 +5,14 @@ import { useState } from "react";
 import type { CVData, SkillCategory } from "@/lib/types";
 import { Section } from "./primitives";
 
+const FlaskIcon = () => (
+  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M10 2v7.31L4.72 17.5A2 2 0 0 0 6.47 21h11.06a2 2 0 0 0 1.75-3.5L14 9.31V2" />
+    <line x1="8.5" y1="2" x2="15.5" y2="2" />
+    <line x1="6" y1="15" x2="18" y2="15" />
+  </svg>
+);
+
 function SkillCategoryRow({
   cat,
   onUpdate,
@@ -77,9 +85,9 @@ export default function SkillsSection({ data, setData }: { data: CVData; setData
   const totalCount = cats.reduce((sum, c) => sum + c.items.length, 0);
 
   return (
-    <Section icon="★" title="Yetenekler" count={totalCount}>
+    <Section icon={<FlaskIcon />} title="Yetenekler (Anahtar Kelimeler)" count={totalCount}>
       <div className="field__hint" style={{ margin: "-4px 0 4px" }}>
-        Kategorilere göre gruplayın (örn. Programlama, Frameworks, Diller). Yetkinliği ekledikten sonra Enter&apos;a basın.
+        Kategorilere göre gruplayın (örn. Programlama, Frameworks, Araçlar). Yetkinliği ekledikten sonra Enter&apos;a basın.
       </div>
       <div className="skills-input">
         {cats.map((cat, i) => (

@@ -23,6 +23,7 @@ export default function PreviewPane({
   score,
   font,
   accent,
+  lineHeight,
 }: {
   data: CVData;
   settings: Settings;
@@ -30,6 +31,7 @@ export default function PreviewPane({
   score: AtsScore;
   font: FontOption;
   accent: AccentOption;
+  lineHeight: string;
 }) {
   const [exporting, setExporting] = useState(false);
 
@@ -87,7 +89,7 @@ export default function PreviewPane({
       <div className="preview-stage">
         <PaginatedCV
           data={data}
-          options={{ showPhoto: settings.showPhoto, font: font.css, accent: accent.val, zoom: settings.zoom }}
+          options={{ showPhoto: settings.showPhoto, font: font.css, accent: accent.val, lineHeight, zoom: settings.zoom }}
         />
       </div>
     </main>

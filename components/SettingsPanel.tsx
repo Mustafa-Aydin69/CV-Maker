@@ -1,9 +1,8 @@
-// components/SettingsPanel.tsx — Görünüm ayarları (Tweaks yerine, kendi içinde)
+// components/SettingsPanel.tsx — Zoom, fotoğraf ve ATS kontrol listesi
 "use client";
 
 import { useState } from "react";
 import type { Settings, AtsScore } from "@/lib/types";
-import { FONT_OPTIONS, ACCENT_OPTIONS } from "@/lib/defaultData";
 
 export default function SettingsPanel({
   settings,
@@ -30,7 +29,7 @@ export default function SettingsPanel({
   return (
     <div className="settings-panel">
       <div className="settings-panel__hd">
-        <b>Görünüm</b>
+        <b>Önizleme Ayarları</b>
         <button className="settings-panel__x" onClick={() => setOpen(false)} aria-label="Kapat">
           ✕
         </button>
@@ -54,32 +53,6 @@ export default function SettingsPanel({
             onChange={(e) => setSettings({ zoom: parseFloat(e.target.value) })}
           />
         </label>
-
-        <div className="settings-sect">Tipografi</div>
-        <label className="settings-row">
-          <span className="settings-lbl">Yazı tipi</span>
-          <select value={settings.fontId} onChange={(e) => setSettings({ fontId: e.target.value })}>
-            {FONT_OPTIONS.map((f) => (
-              <option key={f.id} value={f.id}>
-                {f.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <div className="settings-sect">Aksan rengi</div>
-        <div className="swatches">
-          {ACCENT_OPTIONS.map((a) => (
-            <button
-              key={a.id}
-              className={"swatch" + (settings.accentId === a.id ? " is-active" : "")}
-              style={{ background: a.val }}
-              title={a.label}
-              onClick={() => setSettings({ accentId: a.id })}
-              aria-label={a.label}
-            />
-          ))}
-        </div>
 
         <div className="settings-sect">ATS Kontrol Listesi</div>
         <div className="ats-checks">
