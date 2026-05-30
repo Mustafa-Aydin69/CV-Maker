@@ -6,6 +6,13 @@ export interface LineHeightOption {
   val: string;
 }
 
+export interface MarginOption {
+  id: string;
+  label: string;
+  px: number;  // CV ekranında padding (px)
+  mm: number;  // PDF'te kenar boşluğu (mm)
+}
+
 export interface Experience {
   _id: number;
   role: string;
@@ -40,7 +47,7 @@ export interface Certification {
   _id: number;
   name: string;
   issuer: string;
-  date: string;   // "YYYY-MM"
+  date: string;
   link: string;
 }
 
@@ -48,7 +55,7 @@ export interface Award {
   _id: number;
   title: string;
   issuer: string;
-  date: string;   // "YYYY-MM"
+  date: string;
   note: string;
 }
 
@@ -98,6 +105,10 @@ export interface Settings {
   accentId: string;
   lineHeightId: string;
   zoom: number;
+  sectionOrder: string[];
+  hiddenSections: string[];
+  marginId: string;
+  fontScale: number;
 }
 
 export interface PreviewOptions {
@@ -106,6 +117,10 @@ export interface PreviewOptions {
   accent: string;
   lineHeight: string;
   zoom: number;
+  sectionOrder: string[];
+  hiddenSections: string[];
+  paddingPx: number;
+  fontScale: number;
 }
 
 export interface AtsCheck {

@@ -94,7 +94,16 @@ function plain(text: string, opts?: { size?: number; color?: string; after?: num
 
 // ── Ana dışa aktarma ─────────────────────────────────────────────────────────
 
-export async function exportDocx(data: CVData, accentColor = "#1a1a1a"): Promise<void> {
+const DEFAULT_SECTION_ORDER_DOCX = [
+  "about","experience","education","projects","certifications","awards","skills","languages","hobbies",
+];
+
+export async function exportDocx(
+  data: CVData,
+  accentColor = "#1a1a1a",
+  sectionOrder: string[] = DEFAULT_SECTION_ORDER_DOCX,
+  hiddenSections: string[] = [],
+): Promise<void> {
   const accentHex = hex(accentColor);
   const fullName = [data.firstName, data.lastName].filter(Boolean).join(" ") || "Ad Soyad";
 
@@ -131,97 +140,93 @@ export async function exportDocx(data: CVData, accentColor = "#1a1a1a"): Promise
     children.push(plain(contactParts.join("  |  "), { size: 17, color: "555555", after: 200 }));
   }
 
-  // ── Hakkımda ───────────────────────────────────────────────────────────────
-  if ((data.about || "").trim()) {
-    children.push(sectionHead("Hakkımda"));
-    children.push(plain(data.about.trim(), { after: 80 }));
-  }
-
-  // ── Deneyim ────────────────────────────────────────────────────────────────
-  if (data.experience.length) {
-    children.push(sectionHead("Deneyim"));
-    for (const it of data.experience) {
-      const sub = [it.company, it.location].filter(Boolean).join(" · ");
-      children.push(itemHead(it.role || "Pozisyon", sub ? " · " + sub : "", dateRange(it.start, it.end, it.current), accentHex));
-      children.push(...bullets(it.description));
-      children.push(new Paragraph({ children: [], spacing: { after: 80 } }));
-    }
-  }
-
-  // ── Eğitim ─────────────────────────────────────────────────────────────────
-  if (data.education.length) {
-    children.push(sectionHead("Eğitim"));
-    for (const it of data.education) {
-      const deg = [it.degree, it.field].filter(Boolean).join(", ");
-      const sub = [deg, it.gpa ? "GPA " + it.gpa : ""].filter(Boolean).join(" · ");
-      children.push(itemHead(it.school || "Okul", sub ? " · " + sub : "", dateRange(it.start, it.end, false), accentHex));
-      if (it.notes) children.push(plain(it.notes));
-      children.push(new Paragraph({ children: [], spacing: { after: 80 } }));
-    }
-  }
-
-  // ── Projeler ───────────────────────────────────────────────────────────────
-  if (data.projects.length) {
-    children.push(sectionHead("Projeler"));
-    for (const it of data.projects) {
-      children.push(itemHead(it.name || "Proje", it.stack ? " · " + it.stack : "", it.link || "", accentHex));
-      children.push(...bullets(it.description));
-      children.push(new Paragraph({ children: [], spacing: { after: 80 } }));
-    }
-  }
-
-  // ── Sertifikalar ───────────────────────────────────────────────────────────
-  const certs = (data.certifications ?? []).filter((c) => c.name);
-  if (certs.length) {
-    children.push(sectionHead("Sertifikalar"));
-    for (const it of certs) {
-      children.push(itemHead(it.name, it.issuer ? " · " + it.issuer : "", fmtMonth(it.date), accentHex));
-      if (it.link) children.push(plain(it.link, { size: 17, color: "777777" }));
-      children.push(new Paragraph({ children: [], spacing: { after: 60 } }));
-    }
-  }
-
-  // ── Ödüller ────────────────────────────────────────────────────────────────
-  const awds = (data.awards ?? []).filter((a) => a.title);
-  if (awds.length) {
-    children.push(sectionHead("Ödüller"));
-    for (const it of awds) {
-      children.push(itemHead(it.title, it.issuer ? " · " + it.issuer : "", fmtMonth(it.date), accentHex));
-      if (it.note) children.push(plain(it.note));
-      children.push(new Paragraph({ children: [], spacing: { after: 60 } }));
-    }
-  }
-
-  // ── Yetenekler ─────────────────────────────────────────────────────────────
-  const skillCats = data.skills.filter((c) => c.items.length > 0);
-  if (skillCats.length) {
-    children.push(sectionHead("Yetenekler"));
-    for (const c of skillCats) {
-      children.push(
-        new Paragraph({
+  // ── Bölüm render fonksiyonları ───────────────────────────────────────────
+  const sectionRenderers: Record<string, () => void> = {
+    about: () => {
+      if (!(data.about || "").trim()) return;
+      children.push(sectionHead("Hakkımda"));
+      children.push(plain(data.about.trim(), { after: 80 }));
+    },
+    experience: () => {
+      if (!data.experience.length) return;
+      children.push(sectionHead("Deneyim"));
+      for (const it of data.experience) {
+        const sub = [it.company, it.location].filter(Boolean).join(" · ");
+        children.push(itemHead(it.role || "Pozisyon", sub ? " · " + sub : "", dateRange(it.start, it.end, it.current), accentHex));
+        children.push(...bullets(it.description));
+        children.push(new Paragraph({ children: [], spacing: { after: 80 } }));
+      }
+    },
+    education: () => {
+      if (!data.education.length) return;
+      children.push(sectionHead("Eğitim"));
+      for (const it of data.education) {
+        const deg = [it.degree, it.field].filter(Boolean).join(", ");
+        const sub = [deg, it.gpa ? "GPA " + it.gpa : ""].filter(Boolean).join(" · ");
+        children.push(itemHead(it.school || "Okul", sub ? " · " + sub : "", dateRange(it.start, it.end, false), accentHex));
+        if (it.notes) children.push(plain(it.notes));
+        children.push(new Paragraph({ children: [], spacing: { after: 80 } }));
+      }
+    },
+    projects: () => {
+      if (!data.projects.length) return;
+      children.push(sectionHead("Projeler"));
+      for (const it of data.projects) {
+        children.push(itemHead(it.name || "Proje", it.stack ? " · " + it.stack : "", it.link || "", accentHex));
+        children.push(...bullets(it.description));
+        children.push(new Paragraph({ children: [], spacing: { after: 80 } }));
+      }
+    },
+    certifications: () => {
+      const certs = (data.certifications ?? []).filter((c) => c.name);
+      if (!certs.length) return;
+      children.push(sectionHead("Sertifikalar"));
+      for (const it of certs) {
+        children.push(itemHead(it.name, it.issuer ? " · " + it.issuer : "", fmtMonth(it.date), accentHex));
+        if (it.link) children.push(plain(it.link, { size: 17, color: "777777" }));
+        children.push(new Paragraph({ children: [], spacing: { after: 60 } }));
+      }
+    },
+    awards: () => {
+      const awds = (data.awards ?? []).filter((a) => a.title);
+      if (!awds.length) return;
+      children.push(sectionHead("Ödüller"));
+      for (const it of awds) {
+        children.push(itemHead(it.title, it.issuer ? " · " + it.issuer : "", fmtMonth(it.date), accentHex));
+        if (it.note) children.push(plain(it.note));
+        children.push(new Paragraph({ children: [], spacing: { after: 60 } }));
+      }
+    },
+    skills: () => {
+      const skillCats = data.skills.filter((c) => c.items.length > 0);
+      if (!skillCats.length) return;
+      children.push(sectionHead("Yetenekler"));
+      for (const c of skillCats) {
+        children.push(new Paragraph({
           children: [
             new TextRun({ text: c.name + ": ", bold: true, size: 19 }),
             new TextRun({ text: c.items.join(" · "), size: 19, color: "333333" }),
           ],
           spacing: { after: 60 },
-        })
-      );
-    }
-  }
+        }));
+      }
+    },
+    languages: () => {
+      const langs = (data.languages ?? []).filter(Boolean);
+      if (!langs.length) return;
+      children.push(sectionHead("Yabancı Diller"));
+      children.push(plain(langs.join("  ·  ")));
+    },
+    hobbies: () => {
+      const hobbies = (data.hobbies ?? []).filter(Boolean);
+      if (!hobbies.length) return;
+      children.push(sectionHead("Hobiler"));
+      children.push(plain(hobbies.join("  ·  ")));
+    },
+  };
 
-  // ── Yabancı Diller ─────────────────────────────────────────────────────────
-  const langs = (data.languages ?? []).filter(Boolean);
-  if (langs.length) {
-    children.push(sectionHead("Yabancı Diller"));
-    children.push(plain(langs.join("  ·  ")));
-  }
-
-  // ── Hobiler ────────────────────────────────────────────────────────────────
-  const hobbies = (data.hobbies ?? []).filter(Boolean);
-  if (hobbies.length) {
-    children.push(sectionHead("Hobiler"));
-    children.push(plain(hobbies.join("  ·  ")));
-  }
+  const visible = sectionOrder.filter((id) => !hiddenSections.includes(id));
+  for (const id of visible) sectionRenderers[id]?.();
 
   // ── Belge ──────────────────────────────────────────────────────────────────
   const doc = new Document({

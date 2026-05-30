@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import type { CVData, Settings } from "@/lib/types";
 import { DEFAULT_DATA, EMPTY_DATA, FONT_OPTIONS, ACCENT_OPTIONS, LINE_HEIGHT_OPTIONS } from "@/lib/defaultData";
 import type { CVDocument } from "@/hooks/useDocuments";
+import { SECTION_DEFS, MARGIN_OPTIONS } from "@/lib/defaultData";
 import PersonalSection from "./PersonalSection";
 import { AboutSection, ExperienceSection, EducationSection, ProjectsSection } from "./sections";
 import SkillsSection from "./SkillsSection";
@@ -15,6 +16,163 @@ import HobbiesSection from "./HobbiesSection";
 import JobMatchPanel from "./JobMatchPanel";
 
 // ── İkonlar ──────────────────────────────────────────────────────────────────
+
+// ── Stil Paneli ──────────────────────────────────────────────────────────────
+
+function StylePanel({
+  settings,
+  setSettings,
+}: {
+  settings: Settings;
+  setSettings: (patch: Partial<Settings>) => void;
+}) {
+  const [soOpen, setSoOpen] = useState(false);
+  const sectionOrder   = settings.sectionOrder   ?? [];
+  const hiddenSections = settings.hiddenSections ?? [];
+
+  return (
+    <div className="style-panel">
+      <div className="style-panel__hd">
+        <SlidersIcon />
+        GÖRSEL STİL VE TİPOGRAFİ
+      </div>
+
+      {/* Satır 1: Tipografi · Satır Aralığı · Renk */}
+      <div className="style-panel__body">
+        <div className="style-panel__col">
+          <label>Tipografi</label>
+          <select value={settings.fontId} onChange={(e) => setSettings({ fontId: e.target.value })}>
+            {FONT_OPTIONS.map((f) => <option key={f.id} value={f.id}>{f.label}</option>)}
+          </select>
+        </div>
+        <div className="style-panel__col">
+          <label>Satır Aralığı</label>
+          <select value={settings.lineHeightId} onChange={(e) => setSettings({ lineHeightId: e.target.value })}>
+            {LINE_HEIGHT_OPTIONS.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
+          </select>
+        </div>
+        <div className="style-panel__col">
+          <label>CV Vurgu Rengi</label>
+          <div className="style-panel__swatches">
+            {ACCENT_OPTIONS.map((a) => (
+              <button
+                key={a.id}
+                className={"sp-swatch" + (settings.accentId === a.id ? " is-active" : "")}
+                style={{ background: a.val }}
+                title={a.label}
+                onClick={() => setSettings({ accentId: a.id })}
+                aria-label={a.label}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Satır 2: Kenar Boşluğu · Yazı Boyutu */}
+      <div className="style-panel__body style-panel__body--row2">
+        <div className="style-panel__col">
+          <label>Kenar Boşluğu</label>
+          <select value={settings.marginId ?? "normal"} onChange={(e) => setSettings({ marginId: e.target.value })}>
+            {MARGIN_OPTIONS.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+          </select>
+        </div>
+        <div className="style-panel__col style-panel__col--range">
+          <label>
+            Yazı Boyutu
+            <span className="style-panel__val">{Math.round((settings.fontScale ?? 1) * 100)}%</span>
+          </label>
+          <input
+            type="range"
+            min={0.85} max={1.15} step={0.05}
+            value={settings.fontScale ?? 1}
+            onChange={(e) => setSettings({ fontScale: parseFloat(e.target.value) })}
+          />
+        </div>
+      </div>
+
+      {/* Bölüm Düzeni (açılır) */}
+      <button className="so-toggle" onClick={() => setSoOpen((o) => !o)}>
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points={soOpen ? "18 15 12 9 6 15" : "6 9 12 15 18 9"} />
+        </svg>
+        BÖLÜM DÜZENİ
+        <span className="so-toggle__count">
+          {hiddenSections.length > 0 ? `${hiddenSections.length} gizli` : "tümü görünür"}
+        </span>
+      </button>
+
+      {soOpen && (
+        <SectionOrderList
+          sectionOrder={sectionOrder}
+          hiddenSections={hiddenSections}
+          onChange={(order, hidden) => setSettings({ sectionOrder: order, hiddenSections: hidden })}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Bölüm Düzeni Listesi (sürükle-bırak + göster/gizle) ──────────────────────
+
+function SectionOrderList({
+  sectionOrder,
+  hiddenSections,
+  onChange,
+}: {
+  sectionOrder: string[];
+  hiddenSections: string[];
+  onChange: (order: string[], hidden: string[]) => void;
+}) {
+  const dragId = useRef<string | null>(null);
+
+  const reorder = (fromId: string, toId: string) => {
+    const from = sectionOrder.indexOf(fromId);
+    const to   = sectionOrder.indexOf(toId);
+    if (from === to) return;
+    const next = [...sectionOrder];
+    next.splice(from, 1);
+    next.splice(to, 0, fromId);
+    onChange(next, hiddenSections);
+  };
+
+  const toggle = (id: string) => {
+    const next = hiddenSections.includes(id)
+      ? hiddenSections.filter((h) => h !== id)
+      : [...hiddenSections, id];
+    onChange(sectionOrder, next);
+  };
+
+  return (
+    <div className="so-list">
+      {sectionOrder.map((id) => {
+        const def = SECTION_DEFS.find((s) => s.id === id);
+        if (!def) return null;
+        const hidden = hiddenSections.includes(id);
+        return (
+          <div
+            key={id}
+            className={"so-item" + (hidden ? " so-item--hidden" : "")}
+            draggable
+            onDragStart={() => { dragId.current = id; }}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={() => { if (dragId.current) reorder(dragId.current, id); dragId.current = null; }}
+            onDragEnd={() => { dragId.current = null; }}
+          >
+            <span className="so-item__drag" aria-hidden="true">⋮⋮</span>
+            <label className="so-item__label">
+              <input
+                type="checkbox"
+                checked={!hidden}
+                onChange={() => toggle(id)}
+              />
+              {def.label}
+            </label>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 const SlidersIcon = () => (
   <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -256,41 +414,7 @@ export default function CVForm({
       />
 
       {/* ── Görsel Stil Paneli ── */}
-      <div className="style-panel">
-        <div className="style-panel__hd">
-          <SlidersIcon />
-          GÖRSEL STİL VE TİPOGRAFİ
-        </div>
-        <div className="style-panel__body">
-          <div className="style-panel__col">
-            <label>Tipografi</label>
-            <select value={settings.fontId} onChange={(e) => setSettings({ fontId: e.target.value })}>
-              {FONT_OPTIONS.map((f) => <option key={f.id} value={f.id}>{f.label}</option>)}
-            </select>
-          </div>
-          <div className="style-panel__col">
-            <label>Satır Boşluğu / Satır Aralığı</label>
-            <select value={settings.lineHeightId} onChange={(e) => setSettings({ lineHeightId: e.target.value })}>
-              {LINE_HEIGHT_OPTIONS.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
-            </select>
-          </div>
-          <div className="style-panel__col">
-            <label>CV Vurgu Rengi</label>
-            <div className="style-panel__swatches">
-              {ACCENT_OPTIONS.map((a) => (
-                <button
-                  key={a.id}
-                  className={"sp-swatch" + (settings.accentId === a.id ? " is-active" : "")}
-                  style={{ background: a.val }}
-                  title={a.label}
-                  onClick={() => setSettings({ accentId: a.id })}
-                  aria-label={a.label}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+      <StylePanel settings={settings} setSettings={setSettings} />
 
       {/* ── Form Bölümleri ── */}
       <div className="form">

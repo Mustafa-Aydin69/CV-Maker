@@ -18,13 +18,8 @@ function AtsBadge({ score }: { score: AtsScore }) {
 }
 
 export default function PreviewPane({
-  data,
-  settings,
-  setSettings,
-  score,
-  font,
-  accent,
-  lineHeight,
+  data, settings, setSettings, score, font, accent,
+  lineHeight, paddingPx, paddingMm, fontScale, sectionOrder, hiddenSections,
 }: {
   data: CVData;
   settings: Settings;
@@ -33,19 +28,31 @@ export default function PreviewPane({
   font: FontOption;
   accent: AccentOption;
   lineHeight: string;
+  paddingPx: number;
+  paddingMm: number;
+  fontScale: number;
+  sectionOrder: string[];
+  hiddenSections: string[];
 }) {
-  const [exporting, setExporting] = useState(false);
+  const [exporting,     setExporting]     = useState(false);
   const [exportingDocx, setExportingDocx] = useState(false);
 
   const doExportPdf = async () => {
     if (exporting) return;
     setExporting(true);
     try {
-      await exportPdf(data, { showPhoto: settings.showPhoto, accent: accent.val });
+      await exportPdf(data, {
+        showPhoto: settings.showPhoto,
+        accent: accent.val,
+        sectionOrder,
+        hiddenSections,
+        marginMm: paddingMm,
+        fontScale,
+      });
     } catch (err) {
       console.error(err);
       const msg = err instanceof Error ? err.message : String(err);
-      alert("PDF oluşturulurken bir hata oluştu: " + msg + '\n\nYedek: Yazdır diyaloğundan "PDF olarak kaydet" seçeneğini kullanabilirsiniz.');
+      alert("PDF oluşturulurken bir hata oluştu: " + msg + '\n\nYedek: Yazdır → "PDF olarak kaydet"');
       window.print();
     } finally {
       setExporting(false);
@@ -56,7 +63,7 @@ export default function PreviewPane({
     if (exportingDocx) return;
     setExportingDocx(true);
     try {
-      await exportDocx(data, accent.val);
+      await exportDocx(data, accent.val, sectionOrder, hiddenSections);
     } catch (err) {
       console.error(err);
       alert("Word belgesi oluşturulurken bir hata oluştu.");
@@ -76,17 +83,15 @@ export default function PreviewPane({
           <AtsBadge score={score} />
         </div>
         <div className="topbar__actions">
-          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#5a6275", marginRight: 8 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, color:"#5a6275", marginRight:8 }}>
             <button className="icon-btn" onClick={() => setZoom(Math.max(0.4, +(settings.zoom - 0.1).toFixed(2)))}>−</button>
-            <span style={{ minWidth: 36, textAlign: "center", fontVariantNumeric: "tabular-nums" }}>
+            <span style={{ minWidth:36, textAlign:"center", fontVariantNumeric:"tabular-nums" }}>
               {Math.round(settings.zoom * 100)}%
             </span>
             <button className="icon-btn" onClick={() => setZoom(Math.min(1.4, +(settings.zoom + 0.1).toFixed(2)))}>+</button>
           </div>
-          <button className="btn" onClick={() => window.print()} title="Tarayıcı yazdırma diyaloğunu açar">
-            Yazdır
-          </button>
-          <button className="btn" onClick={doExportDocx} disabled={exportingDocx} title="Word belgesi olarak indir">
+          <button className="btn" onClick={() => window.print()}>Yazdır</button>
+          <button className="btn" onClick={doExportDocx} disabled={exportingDocx}>
             {exportingDocx ? "Hazırlanıyor…" : "↓ Word"}
           </button>
           <button className="btn btn--primary" onClick={doExportPdf} disabled={exporting}>
@@ -97,7 +102,17 @@ export default function PreviewPane({
       <div className="preview-stage">
         <PaginatedCV
           data={data}
-          options={{ showPhoto: settings.showPhoto, font: font.css, accent: accent.val, lineHeight, zoom: settings.zoom }}
+          options={{
+            showPhoto: settings.showPhoto,
+            font: font.css,
+            accent: accent.val,
+            lineHeight,
+            zoom: settings.zoom,
+            sectionOrder,
+            hiddenSections,
+            paddingPx,
+            fontScale,
+          }}
         />
       </div>
     </main>

@@ -90,27 +90,45 @@ function dr(start: string, end: string, current: boolean): string {
   return `${s} – ${e}`;
 }
 
-// ── Sayfa ölçüleri (mm) ─────────────────────────────────────────────
-const PAGE_W = 210;
-const PAGE_H = 297;
-const M_L = 18;
-const M_R = 18;
-const M_T = 18;
-const M_B = 18;
-const CONTENT_W = PAGE_W - M_L - M_R;
-const BOTTOM = PAGE_H - M_B;
+// ── Sayfa ölçüleri (mm) — fonksiyon içinde tanımlanıyor ─────────────
 
 export interface ExportOptions {
   showPhoto?: boolean;
   accent?: string;
+  sectionOrder?: string[];
+  hiddenSections?: string[];
+  marginMm?: number;
+  fontScale?: number;
 }
 
 function safeName(s: string): string {
   return s.replace(/[^a-zA-Z0-9-_İıŞşĞğÇçÖöÜü ]/g, "").replace(/\s+/g, "-");
 }
 
+const DEFAULT_SECTION_ORDER_PDF = [
+  "about","experience","education","projects","certifications","awards","skills","languages","hobbies",
+];
+
 export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise<void> {
-  const { showPhoto = true, accent = "#1a1a1a" } = opts;
+  const {
+    showPhoto      = true,
+    accent         = "#1a1a1a",
+    sectionOrder   = DEFAULT_SECTION_ORDER_PDF,
+    hiddenSections = [],
+    marginMm       = 18,
+    fontScale      = 1,
+  } = opts;
+  const sc = (pt: number) => pt * fontScale;
+
+  // Sayfa ölçüleri
+  const PAGE_W = 210;
+  const PAGE_H = 297;
+  const M_L = marginMm;
+  const M_R = marginMm;
+  const M_T = marginMm;
+  const M_B = marginMm;
+  const CONTENT_W = PAGE_W - M_L - M_R;
+  const BOTTOM = PAGE_H - M_B;
 
   let fonts: FontBundle;
   try {
@@ -217,39 +235,38 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
     headerRightLimit = PAGE_W - M_R - photoW - 4;
   }
 
-  setF(22, "bold");
+  setF(sc(22), "bold");
   setColor(0, 0, 0);
   doc.text(fullName, M_L, M_T + 6.5);
   let nameY = M_T + 6.5;
   if (data.title) {
-    setF(11, "bold");
+    setF(sc(11), "bold");
     setColor(aR, aG, aB);
     doc.text(data.title, M_L, nameY + 5.5);
     nameY += 5.5;
   }
 
   const contacts = [
-    data.address && { label: "Adres", val: data.address },
-    data.phone && { label: "Tel", val: data.phone },
-    data.email && { label: "E-posta", val: data.email },
-    data.linkedin && { label: "LinkedIn", val: data.linkedin },
-    data.github && { label: "GitHub", val: data.github },
-    data.website && { label: "Web", val: data.website },
+    data.address  && { label: "Adres",   val: data.address  },
+    data.phone    && { label: "Tel",     val: data.phone    },
+    data.email    && { label: "E-posta", val: data.email    },
+    data.linkedin && { label: "LinkedIn",val: data.linkedin },
+    data.github   && { label: "GitHub",  val: data.github   },
+    data.website  && { label: "Web",     val: data.website  },
   ].filter(Boolean) as Array<{ label: string; val: string }>;
 
-  setF(9, "normal");
+  setF(sc(9), "normal");
   let cy = M_T + 4;
   for (const c of contacts) {
     setColor(120, 120, 120);
     const labelW = doc.getTextWidth(c.label + ": ");
     setColor(40, 40, 40);
-    const valW = doc.getTextWidth(c.val);
-    const startX = headerRightLimit - (labelW + valW);
+    const startX = headerRightLimit - (labelW + doc.getTextWidth(c.val));
     setColor(120, 120, 120);
     doc.text(c.label + ":", startX, cy);
     setColor(40, 40, 40);
     doc.text(c.val, startX + labelW, cy);
-    cy += 4.2;
+    cy += 4.2 * fontScale;
   }
 
   state.y = Math.max(nameY + 4, M_T + (hasPhoto ? photoH : 0), cy);
@@ -261,7 +278,7 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
   const section = (title: string, followH = 0) => {
     ensureSpace(SEC_HEADER_H + followH);
     state.y += 2;
-    setF(10.5, "bold");
+    setF(sc(10.5), "bold");
     setColor(0, 0, 0);
     doc.text(title.toUpperCase(), M_L, state.y + 3);
     state.y += 4.2;
@@ -272,170 +289,143 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
   };
 
   const drawItemHead = (title: string, sub: string, meta: string, metaItalic = false) => {
-    setF(10.5, "bold");
+    setF(sc(10.5), "bold");
     setColor(15, 15, 15);
     const titleW = doc.getTextWidth(title);
     doc.text(title, M_L, state.y + 3);
     if (sub) {
-      setF(9.5, "italic");
+      setF(sc(9.5), "italic");
       setColor(60, 60, 60);
       doc.text(sub, M_L + titleW, state.y + 3);
     }
     if (meta) {
-      setF(9, metaItalic ? "italic" : "normal");
+      setF(sc(9), metaItalic ? "italic" : "normal");
       setColor(90, 90, 90);
       const dw = doc.getTextWidth(meta);
       doc.text(meta, PAGE_W - M_R - dw, state.y + 3);
     }
-    state.y += 4.6;
+    state.y += 4.6 * fontScale;
   };
 
-  // ── HAKKIMDA ──────────────────────────────────────────────────────
-  if ((data.about || "").trim()) {
-    section("Hakkımda", Math.min(predictWrapped(data.about.trim()), 30));
-    setColor(50, 50, 50);
-    drawWrapped(data.about.trim(), M_L, CONTENT_W, 9.5, "normal");
-    state.y += 1;
-  }
+  // ── Bölüm render fonksiyonları ────────────────────────────────────
+  const fmtDatePdf = (ym: string) => {
+    if (!ym) return "";
+    const [y, m] = ym.split("-");
+    const mi = parseInt(m, 10) - 1;
+    const months = ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
+    return isNaN(mi) || mi < 0 || mi > 11 ? ym : `${months[mi]} ${y}`;
+  };
 
-  // ── DENEYİM ───────────────────────────────────────────────────────
-  if (data.experience.length) {
-    section("Deneyim", predictExp(data.experience[0]));
-    for (const it of data.experience) {
-      ensureSpace(predictExp(it));
-      const subParts: string[] = [];
-      if (it.company) subParts.push(it.company);
-      if (it.location) subParts.push(it.location);
-      drawItemHead(
-        it.role || "Pozisyon",
-        subParts.length ? " · " + subParts.join(" · ") : "",
-        dr(it.start, it.end, it.current)
-      );
-      drawBullets(it.description, M_L, CONTENT_W);
-      state.y += 1.5;
-    }
-  }
-
-  // ── EĞİTİM ────────────────────────────────────────────────────────
-  if (data.education.length) {
-    section("Eğitim", predictEdu(data.education[0]));
-    for (const it of data.education) {
-      ensureSpace(predictEdu(it));
-      const degLine = [it.degree, it.field].filter(Boolean).join(", ");
-      const sub = (degLine ? " · " + degLine : "") + (it.gpa ? " · GPA " + it.gpa : "");
-      drawItemHead(it.school || "Okul", sub, dr(it.start, it.end, false));
-      if (it.notes) {
-        setColor(60, 60, 60);
-        drawWrapped(it.notes, M_L, CONTENT_W, 9.5, "normal");
-      }
-      state.y += 1.5;
-    }
-  }
-
-  // ── PROJELER ──────────────────────────────────────────────────────
-  if (data.projects.length) {
-    section("Projeler", predictProj(data.projects[0]));
-    for (const it of data.projects) {
-      ensureSpace(predictProj(it));
-      drawItemHead(it.name || "Proje", it.stack ? " · " + it.stack : "", it.link || "", true);
-      drawBullets(it.description, M_L, CONTENT_W);
-      state.y += 1.5;
-    }
-  }
-
-  // ── SERTİFİKALAR ──────────────────────────────────────────────────
-  const certs = (data.certifications ?? []).filter((c) => c.name);
-  if (certs.length) {
-    const predictCert = () => 4.6 + 1.5;
-    section("Sertifikalar", predictCert());
-    for (const it of certs) {
-      ensureSpace(predictCert());
-      const date = it.date ? (() => {
-        const [y, m] = it.date.split("-");
-        const mi = parseInt(m, 10) - 1;
-        const months = ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
-        return isNaN(mi) || mi < 0 || mi > 11 ? it.date : `${months[mi]} ${y}`;
-      })() : "";
-      drawItemHead(it.name || "Sertifika", it.issuer ? " · " + it.issuer : "", date);
-      if (it.link) {
-        setF(9, "italic");
-        setColor(100, 100, 100);
-        doc.text(it.link, M_L, state.y + 2.5);
-        state.y += 3.5;
-      }
+  const sectionRenderers: Record<string, () => void> = {
+    about: () => {
+      if (!(data.about || "").trim()) return;
+      section("Hakkımda", Math.min(predictWrapped(data.about.trim()), 30));
+      setColor(50, 50, 50);
+      drawWrapped(data.about.trim(), M_L, CONTENT_W, sc(9.5), "normal");
       state.y += 1;
-    }
-  }
-
-  // ── ÖDÜLLER ───────────────────────────────────────────────────────
-  const awds = (data.awards ?? []).filter((a) => a.title);
-  if (awds.length) {
-    const predictAward = (a: typeof awds[number]) => 4.6 + (a.note ? predictWrapped(a.note) : 0) + 1.5;
-    section("Ödüller", predictAward(awds[0]));
-    for (const it of awds) {
-      ensureSpace(predictAward(it));
-      const date = it.date ? (() => {
-        const [y, m] = it.date.split("-");
-        const mi = parseInt(m, 10) - 1;
-        const months = ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
-        return isNaN(mi) || mi < 0 || mi > 11 ? it.date : `${months[mi]} ${y}`;
-      })() : "";
-      drawItemHead(it.title || "Ödül", it.issuer ? " · " + it.issuer : "", date);
-      if (it.note) {
-        setColor(60, 60, 60);
-        drawWrapped(it.note, M_L, CONTENT_W, 9.5);
+    },
+    experience: () => {
+      if (!data.experience.length) return;
+      section("Deneyim", predictExp(data.experience[0]));
+      for (const it of data.experience) {
+        ensureSpace(predictExp(it));
+        const subParts = [it.company, it.location].filter(Boolean);
+        drawItemHead(it.role || "Pozisyon", subParts.length ? " · " + subParts.join(" · ") : "", dr(it.start, it.end, it.current));
+        drawBullets(it.description, M_L, CONTENT_W);
+        state.y += 1.5;
       }
-      state.y += 1.5;
-    }
-  }
+    },
+    education: () => {
+      if (!data.education.length) return;
+      section("Eğitim", predictEdu(data.education[0]));
+      for (const it of data.education) {
+        ensureSpace(predictEdu(it));
+        const degLine = [it.degree, it.field].filter(Boolean).join(", ");
+        const sub = (degLine ? " · " + degLine : "") + (it.gpa ? " · GPA " + it.gpa : "");
+        drawItemHead(it.school || "Okul", sub, dr(it.start, it.end, false));
+        if (it.notes) { setColor(60, 60, 60); drawWrapped(it.notes, M_L, CONTENT_W, sc(9.5), "normal"); }
+        state.y += 1.5;
+      }
+    },
+    projects: () => {
+      if (!data.projects.length) return;
+      section("Projeler", predictProj(data.projects[0]));
+      for (const it of data.projects) {
+        ensureSpace(predictProj(it));
+        drawItemHead(it.name || "Proje", it.stack ? " · " + it.stack : "", it.link || "", true);
+        drawBullets(it.description, M_L, CONTENT_W);
+        state.y += 1.5;
+      }
+    },
+    certifications: () => {
+      const certs = (data.certifications ?? []).filter((c) => c.name);
+      if (!certs.length) return;
+      section("Sertifikalar", 6.1);
+      for (const it of certs) {
+        ensureSpace(6.1);
+        drawItemHead(it.name, it.issuer ? " · " + it.issuer : "", fmtDatePdf(it.date));
+        if (it.link) { setF(sc(9), "italic"); setColor(100,100,100); doc.text(it.link, M_L, state.y + 2.5); state.y += 3.5; }
+        state.y += 1;
+      }
+    },
+    awards: () => {
+      const awds = (data.awards ?? []).filter((a) => a.title);
+      if (!awds.length) return;
+      section("Ödüller", 6.1);
+      for (const it of awds) {
+        ensureSpace(6.1);
+        drawItemHead(it.title, it.issuer ? " · " + it.issuer : "", fmtDatePdf(it.date));
+        if (it.note) { setColor(60,60,60); drawWrapped(it.note, M_L, CONTENT_W, sc(9.5)); }
+        state.y += 1.5;
+      }
+    },
+    skills: () => {
+      const skillCats = data.skills.filter((c) => c.items.length > 0);
+      if (!skillCats.length) return;
+      section("Yetenekler");
+      const catColW = 38;
+      for (const c of skillCats) {
+        const items = c.items.join(" · ");
+        setF(sc(9.5), "bold"); setColor(15,15,15);
+        const catLabel = c.name + ":";
+        const catW = Math.min(catColW, doc.getTextWidth(catLabel) + 2);
+        doc.text(catLabel, M_L, state.y + 3);
+        setF(sc(9.5), "normal"); setColor(40,40,40);
+        const lines = doc.splitTextToSize(items, CONTENT_W - catW);
+        const lineH = lh(sc(9.5), 1.35);
+        lines.forEach((line: string, i: number) => {
+          ensureSpace(lineH);
+          doc.text(line, M_L + catW, state.y + 3);
+          if (i < lines.length - 1) state.y += lineH;
+        });
+        state.y += lineH + 0.5;
+      }
+    },
+    languages: () => {
+      const langs = (data.languages ?? []).filter(Boolean);
+      if (!langs.length) return;
+      section("Yabancı Diller");
+      setF(sc(9.5), "normal"); setColor(40,40,40);
+      const lineH = lh(sc(9.5), 1.35);
+      ensureSpace(lineH);
+      doc.text(langs.join("  ·  "), M_L, state.y + 3);
+      state.y += lineH + 1;
+    },
+    hobbies: () => {
+      const hobbies = (data.hobbies ?? []).filter(Boolean);
+      if (!hobbies.length) return;
+      section("Hobiler");
+      setF(sc(9.5), "normal"); setColor(40,40,40);
+      const lineH = lh(sc(9.5), 1.35);
+      ensureSpace(lineH);
+      doc.text(hobbies.join("  ·  "), M_L, state.y + 3);
+      state.y += lineH + 1;
+    },
+  };
 
-  // ── YETENEKLER ────────────────────────────────────────────────────
-  const skillCats = data.skills.filter((c) => c.items.length > 0);
-  if (skillCats.length) {
-    section("Yetenekler");
-    const catColW = 38;
-    for (const c of skillCats) {
-      const items = c.items.join(" · ");
-      setF(9.5, "bold");
-      setColor(15, 15, 15);
-      const catLabel = c.name + ":";
-      const catW = Math.min(catColW, doc.getTextWidth(catLabel) + 2);
-      doc.text(catLabel, M_L, state.y + 3);
-      setF(9.5, "normal");
-      setColor(40, 40, 40);
-      const lines = doc.splitTextToSize(items, CONTENT_W - catW);
-      const lineH = lh(9.5, 1.35);
-      lines.forEach((line: string, i: number) => {
-        ensureSpace(lineH);
-        doc.text(line, M_L + catW, state.y + 3);
-        if (i < lines.length - 1) state.y += lineH;
-      });
-      state.y += lineH + 0.5;
-    }
-  }
-
-  // ── YABANCI DİLLER ────────────────────────────────────────────────
-  const langs = (data.languages ?? []).filter(Boolean);
-  if (langs.length) {
-    section("Yabancı Diller");
-    setF(9.5, "normal");
-    setColor(40, 40, 40);
-    const lineH = lh(9.5, 1.35);
-    ensureSpace(lineH);
-    doc.text(langs.join("  ·  "), M_L, state.y + 3);
-    state.y += lineH + 1;
-  }
-
-  // ── HOBİLER ───────────────────────────────────────────────────────
-  const hobbies = (data.hobbies ?? []).filter(Boolean);
-  if (hobbies.length) {
-    section("Hobiler");
-    setF(9.5, "normal");
-    setColor(40, 40, 40);
-    const lineH = lh(9.5, 1.35);
-    ensureSpace(lineH);
-    doc.text(hobbies.join("  ·  "), M_L, state.y + 3);
-    state.y += lineH + 1;
+  const visibleSections = sectionOrder.filter((id) => !hiddenSections.includes(id));
+  for (const id of visibleSections) {
+    sectionRenderers[id]?.();
   }
 
   doc.setProperties({

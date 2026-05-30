@@ -3,7 +3,10 @@
 
 import { useEffect, useMemo } from "react";
 import type { Settings } from "@/lib/types";
-import { DEFAULT_SETTINGS, SETTINGS_KEY, FONT_OPTIONS, ACCENT_OPTIONS, LINE_HEIGHT_OPTIONS } from "@/lib/defaultData";
+import {
+  DEFAULT_SETTINGS, SETTINGS_KEY, FONT_OPTIONS, ACCENT_OPTIONS,
+  LINE_HEIGHT_OPTIONS, MARGIN_OPTIONS, DEFAULT_SECTION_ORDER,
+} from "@/lib/defaultData";
 import { computeAtsScore } from "@/lib/atsScore";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useDocuments } from "@/hooks/useDocuments";
@@ -25,22 +28,26 @@ export default function Page() {
     docsMgr.activeId,
   );
 
-  // Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z klavye kısayolları
+  // Ctrl+Z / Ctrl+Y klavye kısayolları
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const mod = e.ctrlKey || e.metaKey;
       if (!mod) return;
       if (e.key === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
-      if ((e.key === "y") || (e.key === "z" && e.shiftKey)) { e.preventDefault(); redo(); }
+      if (e.key === "y" || (e.key === "z" && e.shiftKey)) { e.preventDefault(); redo(); }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [undo, redo]);
 
-  const score = useMemo(() => computeAtsScore(data), [data]);
-  const font = FONT_OPTIONS.find((f) => f.id === settings.fontId) || FONT_OPTIONS[0];
-  const accent = ACCENT_OPTIONS.find((a) => a.id === settings.accentId) || ACCENT_OPTIONS[0];
+  const score      = useMemo(() => computeAtsScore(data), [data]);
+  const font       = FONT_OPTIONS.find((f) => f.id === settings.fontId)       || FONT_OPTIONS[0];
+  const accent     = ACCENT_OPTIONS.find((a) => a.id === settings.accentId)   || ACCENT_OPTIONS[0];
   const lineHeight = LINE_HEIGHT_OPTIONS.find((l) => l.id === settings.lineHeightId)?.val ?? "1.45";
+  const margin     = MARGIN_OPTIONS.find((m) => m.id === settings.marginId)   || MARGIN_OPTIONS[1];
+  const sectionOrder   = settings.sectionOrder   ?? DEFAULT_SECTION_ORDER;
+  const hiddenSections = settings.hiddenSections ?? [];
+  const fontScale      = settings.fontScale      ?? 1;
 
   return (
     <div className="app">
@@ -69,6 +76,11 @@ export default function Page() {
         font={font}
         accent={accent}
         lineHeight={lineHeight}
+        paddingPx={margin.px}
+        paddingMm={margin.mm}
+        fontScale={fontScale}
+        sectionOrder={sectionOrder}
+        hiddenSections={hiddenSections}
       />
       <SettingsPanel settings={settings} setSettings={patchSettings} score={score} />
     </div>
