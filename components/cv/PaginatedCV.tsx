@@ -198,7 +198,7 @@ function ClassicCV({ data, options }: { data: CVData; options: PreviewOptions })
         {pages.map((idxs, pi) => (
           <div className="cv-page-wrap" key={pi}>
             <div className="cv cv-page" style={cvStyle} data-page={pi + 1}>
-              {idxs.map((i) => <Fragment key={blocks[i].key}>{blocks[i].render()}</Fragment>)}
+              {idxs.filter((i) => i < blocks.length).map((i) => <Fragment key={blocks[i].key}>{blocks[i].render()}</Fragment>)}
             </div>
             {pages.length > 1 && (
               <div className="cv-page__num">{pi + 1} / {pages.length}</div>

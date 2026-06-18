@@ -1,6 +1,4 @@
 /* app/globals.css — CV Maker (Next.js) */
-/* ─── Google Fonts (CV önizlemesi için) ──────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lato:wght@400;700&family=Open+Sans:wght@400;600;700&family=Roboto:wght@400;500;700&family=Montserrat:wght@400;600;700&family=Poppins:wght@400;500;600;700&family=Nunito:wght@400;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Playfair+Display:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap');
 
 *,
 *::before,
@@ -1654,3 +1652,130 @@ body {
     font-size: 10pt !important;
   }
 }
+
+/* ── jm2-* Akıllı İş İlanı Eşleştirme UI ───────────────────────────── */
+.jm2-btn {
+  display: block; width: 100%; margin-top: 8px;
+  padding: 8px 0; border-radius: 6px; border: none; cursor: pointer;
+  background: #2563eb; color: #fff; font: inherit; font-size: 13px; font-weight: 600;
+  transition: background 0.15s;
+}
+.jm2-btn:hover:not(:disabled) { background: #1d4ed8; }
+.jm2-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+
+.jm2-warn { margin: 4px 0 0; font-size: 11px; color: #b45309; }
+
+.jm2-result { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+
+.jm2-stale {
+  padding: 6px 10px; border-radius: 5px; font-size: 11.5px;
+  background: #fef3c7; color: #92400e; border: 1px solid #fde68a;
+}
+
+.jm2-summary {
+  padding: 10px 12px; border-radius: 8px;
+  background: #f8f9fb; border: 1px solid #e3e6ec;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.jm2-summary__scores { display: flex; align-items: center; gap: 10px; }
+.jm2-big-score { font-size: 28px; font-weight: 700; line-height: 1; }
+.jm2-score-labels { display: flex; flex-direction: column; gap: 2px; font-size: 12px; }
+.jm2-conf { color: #8b91a1; font-size: 11px; }
+.jm2-score-bar { height: 6px; background: #e3e6ec; border-radius: 999px; overflow: hidden; }
+.jm2-score-bar__fill { height: 100%; border-radius: 999px; transition: width 0.4s ease; }
+.jm2-stat-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.jm2-stat { font-size: 11px; font-weight: 600; }
+.jm2-stat--match   { color: #1f7a44; }
+.jm2-stat--partial { color: #8a5a14; }
+.jm2-stat--nm      { color: #6b7280; }
+.jm2-stat--miss    { color: #c4322a; }
+.jm2-jobtype { font-size: 10.5px; color: #9ca3af; }
+
+.jm2-qa-section {
+  padding: 10px 12px; border-radius: 8px;
+  background: #eff6ff; border: 1px solid #bfdbfe;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.jm2-qa-title { font-size: 11.5px; font-weight: 700; color: #1d4ed8; }
+.jm2-qa-desc { margin: 0; font-size: 11px; color: #374151; }
+.jm2-qa-item { display: flex; flex-direction: column; gap: 4px; }
+.jm2-qa-label { font-size: 12px; font-weight: 600; color: #1e293b; }
+.jm2-qa-btns { display: flex; gap: 6px; }
+.jm2-qa-btn {
+  padding: 4px 10px; border-radius: 5px; border: 1px solid #d1d5db;
+  background: #fff; font: inherit; font-size: 11px; cursor: pointer; color: #374151;
+}
+.jm2-qa-btn:hover { background: #f3f4f6; }
+.jm2-qa-btn--yes { border-color: #86efac; color: #14532d; background: #f0fdf4; }
+.jm2-qa-btn--yes:hover { background: #dcfce7; }
+.jm2-qa-btn--no  { border-color: #fca5a5; color: #7f1d1d; background: #fff1f2; }
+.jm2-qa-btn--no:hover  { background: #fee2e2; }
+
+.jm2-group { border: 1px solid #e3e6ec; border-radius: 7px; overflow: hidden; }
+.jm2-group__hd {
+  display: flex; align-items: center; gap: 7px; width: 100%;
+  padding: 8px 10px; background: #f8f9fb; border: none; cursor: pointer;
+  font: inherit; font-size: 12px; font-weight: 600; color: #374151; text-align: left;
+}
+.jm2-group__hd:hover { background: #f1f3f7; }
+.jm2-group__dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.jm2-group__dot--matched      { background: #1f7a44; }
+.jm2-group__dot--partial      { background: #8a5a14; }
+.jm2-group__dot--notMentioned { background: #9ca3af; }
+.jm2-group__dot--missing      { background: #c4322a; }
+.jm2-group__dot--suggestions  { background: #2563eb; }
+.jm2-group__chev { margin-left: auto; font-size: 9px; color: #9ca3af; }
+.jm2-group__body { display: flex; flex-direction: column; gap: 0; }
+
+.jm2-card {
+  padding: 8px 10px; border-top: 1px solid #f1f3f7;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.jm2-card:first-child { border-top: none; }
+.jm2-card__row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.jm2-card__label { font-size: 12px; font-weight: 600; color: #1e293b; flex: 1; min-width: 0; }
+.jm2-card__level { font-size: 10px; color: #9ca3af; }
+.jm2-card__evidence { font-size: 11px; color: #6b7280; line-height: 1.5; }
+.jm2-card__explanation { font-size: 11px; color: #374151; line-height: 1.5; }
+.jm2-card__suggestion { font-size: 11px; color: #1d4ed8; line-height: 1.5; }
+
+.jm2-badge {
+  display: inline-block; padding: 2px 6px; border-radius: 4px;
+  font-size: 10px; font-weight: 700; white-space: nowrap;
+}
+.jm2-badge--match   { background: #e7f3ec; color: #1f7a44; }
+.jm2-badge--partial { background: #fef3c7; color: #8a5a14; }
+.jm2-badge--nm      { background: #f3f4f6; color: #6b7280; }
+.jm2-badge--miss    { background: #fdf3f2; color: #c4322a; }
+.jm2-badge--na      { background: #f3f4f6; color: #9ca3af; }
+
+.jm2-suggestion-item { padding: 7px 10px; font-size: 11.5px; color: #374151; border-top: 1px solid #f1f3f7; line-height: 1.55; }
+.jm2-suggestion-item:first-child { border-top: none; }
+
+/* dark mode */
+.app__form[data-dark="true"] .jm2-btn { background: #3b82f6; }
+.app__form[data-dark="true"] .jm2-btn:hover:not(:disabled) { background: #2563eb; }
+.app__form[data-dark="true"] .jm2-btn:disabled { background: #4b5563; }
+.app__form[data-dark="true"] .jm2-warn { color: #fbbf24; }
+.app__form[data-dark="true"] .jm2-stale { background: #3d2e0d; color: #fde68a; border-color: #854d0e; }
+.app__form[data-dark="true"] .jm2-summary { background: #1e2433; border-color: #2d3140; }
+.app__form[data-dark="true"] .jm2-score-bar { background: #2d3140; }
+.app__form[data-dark="true"] .jm2-stat--nm { color: #6b7280; }
+.app__form[data-dark="true"] .jm2-jobtype { color: #6b7280; }
+.app__form[data-dark="true"] .jm2-qa-section { background: #1a2540; border-color: #2d4a80; }
+.app__form[data-dark="true"] .jm2-qa-title { color: #93c5fd; }
+.app__form[data-dark="true"] .jm2-qa-desc { color: #9aa0ad; }
+.app__form[data-dark="true"] .jm2-qa-label { color: #d4d8e1; }
+.app__form[data-dark="true"] .jm2-qa-btn { background: #252b37; border-color: #374151; color: #d4d8e1; }
+.app__form[data-dark="true"] .jm2-qa-btn:hover { background: #2d3447; }
+.app__form[data-dark="true"] .jm2-group { border-color: #2d3140; }
+.app__form[data-dark="true"] .jm2-group__hd { background: #1e2433; color: #d4d8e1; }
+.app__form[data-dark="true"] .jm2-group__hd:hover { background: #252b37; }
+.app__form[data-dark="true"] .jm2-card { border-top-color: #2d3140; }
+.app__form[data-dark="true"] .jm2-card__label { color: #d4d8e1; }
+.app__form[data-dark="true"] .jm2-card__evidence { color: #8b91a1; }
+.app__form[data-dark="true"] .jm2-card__explanation { color: #9aa0ad; }
+.app__form[data-dark="true"] .jm2-card__suggestion { color: #93c5fd; }
+.app__form[data-dark="true"] .jm2-suggestion-item { color: #9aa0ad; border-top-color: #2d3140; }

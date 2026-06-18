@@ -2,11 +2,12 @@
 /node_modules
 /.pnp
 .pnp.js
-
+CLAUDE.md
+CLAUDE_CV_IS_ILANI_ESLESTIRME_PROMPT.md
 # next.js
 /.next/
 /out/
-
+.claude
 # production
 /build
 

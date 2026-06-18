@@ -17,7 +17,6 @@ import JobMatchPanel from "./JobMatchPanel";
 import VolunteerSection from "./VolunteerSection";
 import ReferencesSection from "./ReferencesSection";
 import CustomSectionsPanel from "./CustomSectionsPanel";
-import LinkedInImportPanel from "./LinkedInImportPanel";
 import ShortcutsPanel from "@/components/ShortcutsPanel";
 import type { AtsScore } from "@/lib/types";
 
@@ -419,7 +418,6 @@ export default function CVForm({
   score: AtsScore;
   lastSavedAt: number;
 }) {
-  const importRef = useRef<HTMLInputElement>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   // "?" tuşu kısayol panelini aç/kapat
@@ -442,28 +440,6 @@ export default function CVForm({
       setData({ ...EMPTY_DATA, skills: [{ _id: Date.now(), name: "Diller", items: [] }] });
   };
 
-  const exportJson = () => {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    const name = [data.firstName, data.lastName].filter(Boolean).join("-") || "cv";
-    a.href = url;
-    a.download = `${name}-cv.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const importJson = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    const r = new FileReader();
-    r.onload = () => {
-      try { setData({ ...DEFAULT_DATA, ...JSON.parse(r.result as string) }); }
-      catch { alert("Geçersiz JSON dosyası."); }
-    };
-    r.readAsText(f);
-    e.target.value = "";
-  };
 
   return (
     <>
@@ -547,14 +523,8 @@ export default function CVForm({
         <LanguagesSection      data={data} setData={setData} />
         <HobbiesSection        data={data} setData={setData} />
         <CustomSectionsPanel   data={data} setData={setData} />
-        <LinkedInImportPanel   data={data} setData={setData} />
         <JobMatchPanel         data={data} />
 
-        <div style={{ margin: "18px 12px", display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <input ref={importRef} type="file" accept="application/json" onChange={importJson} style={{ display: "none" }} />
-          <button className="btn" onClick={() => importRef.current?.click()}>JSON içe aktar</button>
-          <button className="btn" onClick={exportJson}>JSON dışa aktar</button>
-        </div>
       </div>
     </aside>
     {shortcutsOpen && <ShortcutsPanel onClose={() => setShortcutsOpen(false)} />}

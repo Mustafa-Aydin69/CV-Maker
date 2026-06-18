@@ -225,7 +225,7 @@ export default function SidebarCV({ data, options }: { data: CVData; options: Pr
             <div className="cv cv-page cv--sidebar" style={cvStyle} data-page={pi + 1}>
               <SidebarContent data={data} showPhoto={showPhoto} accentHex={accentHex} />
               <div className="cvs__main">
-                {idxs.map((i) => <Fragment key={blocks[i].key}>{blocks[i].render()}</Fragment>)}
+                {idxs.filter((i) => i < blocks.length).map((i) => <Fragment key={blocks[i].key}>{blocks[i].render()}</Fragment>)}
               </div>
             </div>
             {pages.length > 1 && <div className="cv-page__num">{pi + 1} / {pages.length}</div>}
