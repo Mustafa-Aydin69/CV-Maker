@@ -143,6 +143,23 @@ function StylePanel({
         </div>
       </div>
 
+      {/* CV çıktı dili — yalnızca CV önizleme/PDF/Word'deki sabit başlıkları çevirir, girilen içeriği değiştirmez */}
+      <div className="template-row">
+        <span className="template-row__label">CV Dili</span>
+        <div className="template-row__opts">
+          {(["tr", "en"] as const).map((l) => (
+            <button
+              key={l}
+              className={"template-btn" + ((settings.language ?? "tr") === l ? " is-active" : "")}
+              onClick={() => setSettings({ language: l })}
+              title="Yalnızca CV'deki sabit başlıkları (Deneyim, Eğitim vb.) çevirir; kendi yazdığınız metinler değişmez"
+            >
+              {l === "tr" ? "Türkçe" : "İngilizce"}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Bölüm Düzeni (açılır) */}
       <button className="so-toggle" onClick={() => setSoOpen((o) => !o)}>
         <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">

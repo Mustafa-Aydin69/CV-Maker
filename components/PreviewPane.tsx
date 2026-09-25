@@ -19,7 +19,7 @@ function AtsBadge({ score }: { score: AtsScore }) {
 
 export default function PreviewPane({
   data, settings, setSettings, score, font, accent,
-  lineHeight, paddingPx, paddingMm, fontScale, sectionOrder, hiddenSections, template,
+  lineHeight, paddingPx, paddingMm, fontScale, sectionOrder, hiddenSections, template, language,
 }: {
   data: CVData;
   settings: Settings;
@@ -34,6 +34,7 @@ export default function PreviewPane({
   sectionOrder: string[];
   hiddenSections: string[];
   template: "classic" | "sidebar";
+  language: "tr" | "en";
 }) {
   const [exporting,     setExporting]     = useState(false);
   const [exportingDocx, setExportingDocx] = useState(false);
@@ -49,6 +50,7 @@ export default function PreviewPane({
         hiddenSections,
         marginMm: paddingMm,
         fontScale,
+        language,
       });
     } catch (err) {
       console.error(err);
@@ -64,7 +66,7 @@ export default function PreviewPane({
     if (exportingDocx) return;
     setExportingDocx(true);
     try {
-      await exportDocx(data, accent.val, sectionOrder, hiddenSections);
+      await exportDocx(data, accent.val, sectionOrder, hiddenSections, language);
     } catch (err) {
       console.error(err);
       alert("Word belgesi oluşturulurken bir hata oluştu.");
@@ -114,6 +116,7 @@ export default function PreviewPane({
             paddingPx,
             fontScale,
             template,
+            language,
           }}
         />
       </div>

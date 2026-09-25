@@ -49,6 +49,7 @@ export default function Page() {
   const hiddenSections = settings.hiddenSections ?? [];
   const fontScale      = settings.fontScale      ?? 1;
   const template       = settings.template       ?? "classic";
+  const language       = settings.language       ?? "tr";
 
   // Özel renk desteği
   const resolvedAccent = settings.accentId === "custom"
@@ -90,6 +91,7 @@ export default function Page() {
         sectionOrder={sectionOrder}
         hiddenSections={hiddenSections}
         template={template}
+        language={language}
       />
       <SettingsPanel settings={settings} setSettings={patchSettings} score={score} />
     </div>

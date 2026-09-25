@@ -2,6 +2,7 @@
 import type { ReactNode } from "react";
 import type { CVData, Experience, Education, Project, Certification, Award, Volunteer, Reference } from "@/lib/types";
 import { dateRange, fmtMonth } from "@/lib/format";
+import { placeholder, type Lang } from "@/lib/i18n";
 import { ICON } from "./Icons";
 
 export function Bullets({ text }: { text: string }) {
@@ -20,8 +21,8 @@ export function Bullets({ text }: { text: string }) {
   );
 }
 
-export function CVHeader({ data, showPhoto }: { data: CVData; showPhoto: boolean }) {
-  const fullName = [data.firstName, data.lastName].filter(Boolean).join(" ") || "Ad Soyad";
+export function CVHeader({ data, showPhoto, lang }: { data: CVData; showPhoto: boolean; lang: Lang }) {
+  const fullName = [data.firstName, data.lastName].filter(Boolean).join(" ") || placeholder("fullName", lang);
   const hasPhoto = showPhoto && !!data.photo;
   const contacts: Array<{ icon: ReactNode; val: string }> = [
     data.address  && { icon: ICON.address,  val: data.address  },
@@ -52,13 +53,13 @@ export function CVHeader({ data, showPhoto }: { data: CVData; showPhoto: boolean
   );
 }
 
-export function ExperienceItem({ it }: { it: Experience }) {
-  const range = dateRange(it.start, it.end, it.current);
+export function ExperienceItem({ it, lang }: { it: Experience; lang: Lang }) {
+  const range = dateRange(it.start, it.end, it.current, lang);
   return (
     <div className="cv__item">
       <div className="cv__item-head">
         <div>
-          <span className="cv__item-title">{it.role || "Pozisyon"}</span>
+          <span className="cv__item-title">{it.role || placeholder("position", lang)}</span>
           {it.company  && <span className="cv__item-sub"> · {it.company}</span>}
           {it.location && <span className="cv__item-sub" style={{ color: "#666" }}> · {it.location}</span>}
         </div>
@@ -69,14 +70,14 @@ export function ExperienceItem({ it }: { it: Experience }) {
   );
 }
 
-export function EducationItem({ it }: { it: Education }) {
-  const range = dateRange(it.start, it.end, false);
+export function EducationItem({ it, lang }: { it: Education; lang: Lang }) {
+  const range = dateRange(it.start, it.end, false, lang);
   const degLine = [it.degree, it.field].filter(Boolean).join(", ");
   return (
     <div className="cv__item">
       <div className="cv__item-head">
         <div>
-          <span className="cv__item-title">{it.school || "Okul"}</span>
+          <span className="cv__item-title">{it.school || placeholder("school", lang)}</span>
           {degLine && <span className="cv__item-sub"> · {degLine}</span>}
           {it.gpa && <span className="cv__item-sub" style={{ color: "#666" }}> · GPA {it.gpa}</span>}
         </div>
@@ -87,12 +88,12 @@ export function EducationItem({ it }: { it: Education }) {
   );
 }
 
-export function ProjectItem({ it }: { it: Project }) {
+export function ProjectItem({ it, lang }: { it: Project; lang: Lang }) {
   return (
     <div className="cv__item">
       <div className="cv__item-head">
         <div>
-          <span className="cv__item-title">{it.name || "Proje"}</span>
+          <span className="cv__item-title">{it.name || placeholder("project", lang)}</span>
           {it.stack && <span className="cv__item-sub"> · {it.stack}</span>}
         </div>
         {it.link && <span className="cv__item-meta" style={{ fontStyle: "italic" }}>{it.link}</span>}
@@ -102,13 +103,13 @@ export function ProjectItem({ it }: { it: Project }) {
   );
 }
 
-export function CertificationItem({ it }: { it: Certification }) {
-  const date = fmtMonth(it.date);
+export function CertificationItem({ it, lang }: { it: Certification; lang: Lang }) {
+  const date = fmtMonth(it.date, lang);
   return (
     <div className="cv__item">
       <div className="cv__item-head">
         <div>
-          <span className="cv__item-title">{it.name || "Sertifika"}</span>
+          <span className="cv__item-title">{it.name || placeholder("cert", lang)}</span>
           {it.issuer && <span className="cv__item-sub"> · {it.issuer}</span>}
         </div>
         {date && <span className="cv__item-meta">{date}</span>}
@@ -118,13 +119,13 @@ export function CertificationItem({ it }: { it: Certification }) {
   );
 }
 
-export function AwardItem({ it }: { it: Award }) {
-  const date = fmtMonth(it.date);
+export function AwardItem({ it, lang }: { it: Award; lang: Lang }) {
+  const date = fmtMonth(it.date, lang);
   return (
     <div className="cv__item">
       <div className="cv__item-head">
         <div>
-          <span className="cv__item-title">{it.title || "Ödül"}</span>
+          <span className="cv__item-title">{it.title || placeholder("award", lang)}</span>
           {it.issuer && <span className="cv__item-sub"> · {it.issuer}</span>}
         </div>
         {date && <span className="cv__item-meta">{date}</span>}
@@ -134,13 +135,13 @@ export function AwardItem({ it }: { it: Award }) {
   );
 }
 
-export function VolunteerItem({ it }: { it: Volunteer }) {
-  const range = dateRange(it.start, it.end, it.current);
+export function VolunteerItem({ it, lang }: { it: Volunteer; lang: Lang }) {
+  const range = dateRange(it.start, it.end, it.current, lang);
   return (
     <div className="cv__item">
       <div className="cv__item-head">
         <div>
-          <span className="cv__item-title">{it.role || "Gönüllü Rol"}</span>
+          <span className="cv__item-title">{it.role || placeholder("volRole", lang)}</span>
           {it.organization && <span className="cv__item-sub"> · {it.organization}</span>}
           {it.location && <span className="cv__item-sub" style={{ color:"#666" }}> · {it.location}</span>}
         </div>
@@ -151,12 +152,12 @@ export function VolunteerItem({ it }: { it: Volunteer }) {
   );
 }
 
-export function ReferenceItem({ it }: { it: Reference }) {
+export function ReferenceItem({ it, lang }: { it: Reference; lang: Lang }) {
   return (
     <div className="cv__item">
       <div className="cv__item-head">
         <div>
-          <span className="cv__item-title">{it.name || "Referans"}</span>
+          <span className="cv__item-title">{it.name || placeholder("reference", lang)}</span>
           {it.title   && <span className="cv__item-sub"> · {it.title}</span>}
           {it.company && <span className="cv__item-sub" style={{ color:"#666" }}> · {it.company}</span>}
         </div>

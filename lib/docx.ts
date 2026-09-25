@@ -13,6 +13,7 @@ import {
 } from "docx";
 import type { CVData } from "./types";
 import { dateRange, fmtMonth } from "./format";
+import { sectionTitle, placeholder, type Lang } from "./i18n";
 
 // ── Yardımcılar ──────────────────────────────────────────────────────────────
 
@@ -103,9 +104,10 @@ export async function exportDocx(
   accentColor = "#1a1a1a",
   sectionOrder: string[] = DEFAULT_SECTION_ORDER_DOCX,
   hiddenSections: string[] = [],
+  language: Lang = "tr",
 ): Promise<void> {
   const accentHex = hex(accentColor);
-  const fullName = [data.firstName, data.lastName].filter(Boolean).join(" ") || "Ad Soyad";
+  const fullName = [data.firstName, data.lastName].filter(Boolean).join(" ") || placeholder("fullName", language);
 
   const children: Paragraph[] = [];
 
@@ -144,35 +146,35 @@ export async function exportDocx(
   const sectionRenderers: Record<string, () => void> = {
     about: () => {
       if (!(data.about || "").trim()) return;
-      children.push(sectionHead("Hakkımda"));
+      children.push(sectionHead(sectionTitle("about", language)));
       children.push(plain(data.about.trim(), { after: 80 }));
     },
     experience: () => {
       if (!data.experience.length) return;
-      children.push(sectionHead("Deneyim"));
+      children.push(sectionHead(sectionTitle("experience", language)));
       for (const it of data.experience) {
         const sub = [it.company, it.location].filter(Boolean).join(" · ");
-        children.push(itemHead(it.role || "Pozisyon", sub ? " · " + sub : "", dateRange(it.start, it.end, it.current), accentHex));
+        children.push(itemHead(it.role || placeholder("position", language), sub ? " · " + sub : "", dateRange(it.start, it.end, it.current, language), accentHex));
         children.push(...bullets(it.description));
         children.push(new Paragraph({ children: [], spacing: { after: 80 } }));
       }
     },
     education: () => {
       if (!data.education.length) return;
-      children.push(sectionHead("Eğitim"));
+      children.push(sectionHead(sectionTitle("education", language)));
       for (const it of data.education) {
         const deg = [it.degree, it.field].filter(Boolean).join(", ");
         const sub = [deg, it.gpa ? "GPA " + it.gpa : ""].filter(Boolean).join(" · ");
-        children.push(itemHead(it.school || "Okul", sub ? " · " + sub : "", dateRange(it.start, it.end, false), accentHex));
+        children.push(itemHead(it.school || placeholder("school", language), sub ? " · " + sub : "", dateRange(it.start, it.end, false, language), accentHex));
         if (it.notes) children.push(plain(it.notes));
         children.push(new Paragraph({ children: [], spacing: { after: 80 } }));
       }
     },
     projects: () => {
       if (!data.projects.length) return;
-      children.push(sectionHead("Projeler"));
+      children.push(sectionHead(sectionTitle("projects", language)));
       for (const it of data.projects) {
-        children.push(itemHead(it.name || "Proje", it.stack ? " · " + it.stack : "", it.link || "", accentHex));
+        children.push(itemHead(it.name || placeholder("project", language), it.stack ? " · " + it.stack : "", it.link || "", accentHex));
         children.push(...bullets(it.description));
         children.push(new Paragraph({ children: [], spacing: { after: 80 } }));
       }
@@ -180,9 +182,9 @@ export async function exportDocx(
     certifications: () => {
       const certs = (data.certifications ?? []).filter((c) => c.name);
       if (!certs.length) return;
-      children.push(sectionHead("Sertifikalar"));
+      children.push(sectionHead(sectionTitle("certifications", language)));
       for (const it of certs) {
-        children.push(itemHead(it.name, it.issuer ? " · " + it.issuer : "", fmtMonth(it.date), accentHex));
+        children.push(itemHead(it.name, it.issuer ? " · " + it.issuer : "", fmtMonth(it.date, language), accentHex));
         if (it.link) children.push(plain(it.link, { size: 17, color: "777777" }));
         children.push(new Paragraph({ children: [], spacing: { after: 60 } }));
       }
@@ -190,9 +192,9 @@ export async function exportDocx(
     awards: () => {
       const awds = (data.awards ?? []).filter((a) => a.title);
       if (!awds.length) return;
-      children.push(sectionHead("Ödüller"));
+      children.push(sectionHead(sectionTitle("awards", language)));
       for (const it of awds) {
-        children.push(itemHead(it.title, it.issuer ? " · " + it.issuer : "", fmtMonth(it.date), accentHex));
+        children.push(itemHead(it.title, it.issuer ? " · " + it.issuer : "", fmtMonth(it.date, language), accentHex));
         if (it.note) children.push(plain(it.note));
         children.push(new Paragraph({ children: [], spacing: { after: 60 } }));
       }
@@ -200,7 +202,7 @@ export async function exportDocx(
     skills: () => {
       const skillCats = data.skills.filter((c) => c.items.length > 0);
       if (!skillCats.length) return;
-      children.push(sectionHead("Yetenekler"));
+      children.push(sectionHead(sectionTitle("skills", language)));
       for (const c of skillCats) {
         children.push(new Paragraph({
           children: [
@@ -214,22 +216,22 @@ export async function exportDocx(
     languages: () => {
       const langs = (data.languages ?? []).filter(Boolean);
       if (!langs.length) return;
-      children.push(sectionHead("Yabancı Diller"));
+      children.push(sectionHead(sectionTitle("languages", language)));
       children.push(plain(langs.join("  ·  ")));
     },
     hobbies: () => {
       const hobbies = (data.hobbies ?? []).filter(Boolean);
       if (!hobbies.length) return;
-      children.push(sectionHead("Hobiler"));
+      children.push(sectionHead(sectionTitle("hobbies", language)));
       children.push(plain(hobbies.join("  ·  ")));
     },
     volunteer: () => {
       const vols = (data.volunteers ?? []).filter((v) => v.role);
       if (!vols.length) return;
-      children.push(sectionHead("Gönüllülük"));
+      children.push(sectionHead(sectionTitle("volunteer", language)));
       for (const it of vols) {
         const sub = [it.organization, it.location].filter(Boolean).join(" · ");
-        children.push(itemHead(it.role, sub ? " · " + sub : "", dateRange(it.start, it.end, it.current), accentHex));
+        children.push(itemHead(it.role, sub ? " · " + sub : "", dateRange(it.start, it.end, it.current, language), accentHex));
         children.push(...bullets(it.description));
         children.push(new Paragraph({ children: [], spacing: { after: 80 } }));
       }
@@ -237,7 +239,7 @@ export async function exportDocx(
     references: () => {
       const refs = (data.references ?? []).filter((r) => r.name);
       if (!refs.length) return;
-      children.push(sectionHead("Referanslar"));
+      children.push(sectionHead(sectionTitle("references", language)));
       for (const it of refs) {
         const sub = [it.title, it.company].filter(Boolean).join(", ");
         const contact = [it.email, it.phone].filter(Boolean).join(" · ");

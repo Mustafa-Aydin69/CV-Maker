@@ -7,6 +7,7 @@ import {
 } from "react";
 import type { CVData, PreviewOptions } from "@/lib/types";
 import { CVHeader, ExperienceItem, EducationItem, ProjectItem, CertificationItem, AwardItem, VolunteerItem, ReferenceItem } from "./items";
+import { sectionTitle, type Lang } from "@/lib/i18n";
 import SidebarCV from "./SidebarCV";
 
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -18,9 +19,10 @@ function buildBlocks(
   showPhoto: boolean,
   sectionOrder: string[],
   hiddenSections: string[],
+  lang: Lang,
 ): Block[] {
   const blocks: Block[] = [
-    { key: "header", render: () => <CVHeader data={data} showPhoto={showPhoto} /> },
+    { key: "header", render: () => <CVHeader data={data} showPhoto={showPhoto} lang={lang} /> },
   ];
 
   const addSection = (title: string, nodes: ReactNode[]) => {
@@ -43,36 +45,36 @@ function buildBlocks(
     switch (id) {
       case "about":
         if ((data.about || "").trim())
-          addSection("Hakkımda", [<p className="cv__about" key="about">{data.about}</p>]);
+          addSection(sectionTitle("about", lang), [<p className="cv__about" key="about">{data.about}</p>]);
         break;
       case "experience":
         if (data.experience.length)
-          addSection("Deneyim", data.experience.map((it) => <ExperienceItem key={it._id} it={it} />));
+          addSection(sectionTitle("experience", lang), data.experience.map((it) => <ExperienceItem key={it._id} it={it} lang={lang} />));
         break;
       case "education":
         if (data.education.length)
-          addSection("Eğitim", data.education.map((it) => <EducationItem key={it._id} it={it} />));
+          addSection(sectionTitle("education", lang), data.education.map((it) => <EducationItem key={it._id} it={it} lang={lang} />));
         break;
       case "projects":
         if (data.projects.length)
-          addSection("Projeler", data.projects.map((it) => <ProjectItem key={it._id} it={it} />));
+          addSection(sectionTitle("projects", lang), data.projects.map((it) => <ProjectItem key={it._id} it={it} lang={lang} />));
         break;
       case "certifications": {
         const certs = (data.certifications ?? []).filter((c) => c.name);
         if (certs.length)
-          addSection("Sertifikalar", certs.map((it) => <CertificationItem key={it._id} it={it} />));
+          addSection(sectionTitle("certifications", lang), certs.map((it) => <CertificationItem key={it._id} it={it} lang={lang} />));
         break;
       }
       case "awards": {
         const awds = (data.awards ?? []).filter((a) => a.title);
         if (awds.length)
-          addSection("Ödüller", awds.map((it) => <AwardItem key={it._id} it={it} />));
+          addSection(sectionTitle("awards", lang), awds.map((it) => <AwardItem key={it._id} it={it} lang={lang} />));
         break;
       }
       case "skills": {
         const vis = data.skills.filter((c) => c.items.length > 0);
         if (vis.length)
-          addSection("Yetenekler", [
+          addSection(sectionTitle("skills", lang), [
             <div className="cv__skills--cat" key="skills">
               {vis.map((c, i) => (
                 <Fragment key={i}>
@@ -87,25 +89,25 @@ function buildBlocks(
       case "languages": {
         const langs = (data.languages ?? []).filter(Boolean);
         if (langs.length)
-          addSection("Yabancı Diller", [<div key="langs">{langs.join(" · ")}</div>]);
+          addSection(sectionTitle("languages", lang), [<div key="langs">{langs.join(" · ")}</div>]);
         break;
       }
       case "hobbies": {
         const hobs = (data.hobbies ?? []).filter(Boolean);
         if (hobs.length)
-          addSection("Hobiler", [<div key="hobs">{hobs.join(" · ")}</div>]);
+          addSection(sectionTitle("hobbies", lang), [<div key="hobs">{hobs.join(" · ")}</div>]);
         break;
       }
       case "volunteer": {
         const vols = (data.volunteers ?? []).filter((v) => v.role);
         if (vols.length)
-          addSection("Gönüllülük", vols.map((it) => <VolunteerItem key={it._id} it={it} />));
+          addSection(sectionTitle("volunteer", lang), vols.map((it) => <VolunteerItem key={it._id} it={it} lang={lang} />));
         break;
       }
       case "references": {
         const refs = (data.references ?? []).filter((r) => r.name);
         if (refs.length)
-          addSection("Referanslar", refs.map((it) => <ReferenceItem key={it._id} it={it} />));
+          addSection(sectionTitle("references", lang), refs.map((it) => <ReferenceItem key={it._id} it={it} lang={lang} />));
         break;
       }
     }
@@ -139,7 +141,7 @@ export default function PaginatedCV({ data, options }: { data: CVData; options: 
 }
 
 function ClassicCV({ data, options }: { data: CVData; options: PreviewOptions }) {
-  const { showPhoto, font, accent, lineHeight, zoom, sectionOrder, hiddenSections, paddingPx, fontScale } = options;
+  const { showPhoto, font, accent, lineHeight, zoom, sectionOrder, hiddenSections, paddingPx, fontScale, language } = options;
 
   const cvStyle = {
     "--cv-font":       font,
@@ -151,8 +153,8 @@ function ClassicCV({ data, options }: { data: CVData; options: PreviewOptions })
   } as CSSProperties;
 
   const blocks = useMemo(
-    () => buildBlocks(data, showPhoto, sectionOrder, hiddenSections),
-    [data, showPhoto, sectionOrder, hiddenSections],
+    () => buildBlocks(data, showPhoto, sectionOrder, hiddenSections, language),
+    [data, showPhoto, sectionOrder, hiddenSections, language],
   );
 
   const measureRef = useRef<HTMLDivElement>(null);

@@ -69,6 +69,7 @@ export interface Settings {
   fontScale: number;
   template: "classic" | "sidebar";
   darkMode: boolean;
+  language: "tr" | "en";
 }
 
 export interface PreviewOptions {
@@ -77,6 +78,7 @@ export interface PreviewOptions {
   sectionOrder: string[]; hiddenSections: string[];
   paddingPx: number; fontScale: number;
   template: "classic" | "sidebar";
+  language: "tr" | "en";
 }
 
 export interface AtsCheck { ok: boolean; label: string; }

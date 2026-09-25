@@ -3,6 +3,8 @@
 
 import { jsPDF } from "jspdf";
 import type { CVData } from "./types";
+import { fmtMonth, dateRange } from "./format";
+import { sectionTitle, placeholder, contactLabel, type Lang } from "./i18n";
 
 // ── Font yükleme ────────────────────────────────────────────────────
 const FONT_SOURCES: Array<(style: string, weight: string) => string> = [
@@ -72,24 +74,6 @@ function hexToRgb(h: string): [number, number, number] {
   return [parseInt(m.slice(0, 2), 16), parseInt(m.slice(2, 4), 16), parseInt(m.slice(4, 6), 16)];
 }
 
-// ── Tarih biçimi ────────────────────────────────────────────────────
-const TR_MONTHS_PDF = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
-function fmtM(ym: string): string {
-  if (!ym) return "";
-  const [y, m] = ym.split("-");
-  const mi = parseInt(m, 10) - 1;
-  if (isNaN(mi) || mi < 0 || mi > 11) return ym;
-  return `${TR_MONTHS_PDF[mi]} ${y}`;
-}
-function dr(start: string, end: string, current: boolean): string {
-  const s = fmtM(start);
-  const e = current ? "Halen" : fmtM(end);
-  if (!s && !e) return "";
-  if (!s) return e;
-  if (!e) return s;
-  return `${s} – ${e}`;
-}
-
 // ── Sayfa ölçüleri (mm) — fonksiyon içinde tanımlanıyor ─────────────
 
 export interface ExportOptions {
@@ -99,6 +83,7 @@ export interface ExportOptions {
   hiddenSections?: string[];
   marginMm?: number;
   fontScale?: number;
+  language?: Lang;
 }
 
 function safeName(s: string): string {
@@ -117,7 +102,9 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
     hiddenSections = [],
     marginMm       = 18,
     fontScale      = 1,
+    language       = "tr",
   } = opts;
+  const dr = (start: string, end: string, current: boolean) => dateRange(start, end, current, language);
   const sc = (pt: number) => pt * fontScale;
 
   // Sayfa ölçüleri
@@ -215,7 +202,7 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
   const SEC_HEADER_H = 2 + 4.2 + 3.2;
 
   // ── HEADER ────────────────────────────────────────────────────────
-  const fullName = [data.firstName, data.lastName].filter(Boolean).join(" ") || "Ad Soyad";
+  const fullName = [data.firstName, data.lastName].filter(Boolean).join(" ") || placeholder("fullName", language);
 
   let headerRightLimit = PAGE_W - M_R;
   let photoH = 0;
@@ -247,12 +234,12 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
   }
 
   const contacts = [
-    data.address  && { label: "Adres",   val: data.address  },
-    data.phone    && { label: "Tel",     val: data.phone    },
-    data.email    && { label: "E-posta", val: data.email    },
-    data.linkedin && { label: "LinkedIn",val: data.linkedin },
-    data.github   && { label: "GitHub",  val: data.github   },
-    data.website  && { label: "Web",     val: data.website  },
+    data.address  && { label: contactLabel("address",  language), val: data.address  },
+    data.phone    && { label: contactLabel("phone",    language), val: data.phone    },
+    data.email    && { label: contactLabel("email",    language), val: data.email    },
+    data.linkedin && { label: contactLabel("linkedin", language), val: data.linkedin },
+    data.github   && { label: contactLabel("github",   language), val: data.github   },
+    data.website  && { label: contactLabel("website",  language), val: data.website  },
   ].filter(Boolean) as Array<{ label: string; val: string }>;
 
   setF(sc(9), "normal");
@@ -308,51 +295,45 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
   };
 
   // ── Bölüm render fonksiyonları ────────────────────────────────────
-  const fmtDatePdf = (ym: string) => {
-    if (!ym) return "";
-    const [y, m] = ym.split("-");
-    const mi = parseInt(m, 10) - 1;
-    const months = ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
-    return isNaN(mi) || mi < 0 || mi > 11 ? ym : `${months[mi]} ${y}`;
-  };
+  const fmtDatePdf = (ym: string) => fmtMonth(ym, language);
 
   const sectionRenderers: Record<string, () => void> = {
     about: () => {
       if (!(data.about || "").trim()) return;
-      section("Hakkımda", Math.min(predictWrapped(data.about.trim()), 30));
+      section(sectionTitle("about", language), Math.min(predictWrapped(data.about.trim()), 30));
       setColor(50, 50, 50);
       drawWrapped(data.about.trim(), M_L, CONTENT_W, sc(9.5), "normal");
       state.y += 1;
     },
     experience: () => {
       if (!data.experience.length) return;
-      section("Deneyim", predictExp(data.experience[0]));
+      section(sectionTitle("experience", language), predictExp(data.experience[0]));
       for (const it of data.experience) {
         ensureSpace(predictExp(it));
         const subParts = [it.company, it.location].filter(Boolean);
-        drawItemHead(it.role || "Pozisyon", subParts.length ? " · " + subParts.join(" · ") : "", dr(it.start, it.end, it.current));
+        drawItemHead(it.role || placeholder("position", language), subParts.length ? " · " + subParts.join(" · ") : "", dr(it.start, it.end, it.current));
         drawBullets(it.description, M_L, CONTENT_W);
         state.y += 1.5;
       }
     },
     education: () => {
       if (!data.education.length) return;
-      section("Eğitim", predictEdu(data.education[0]));
+      section(sectionTitle("education", language), predictEdu(data.education[0]));
       for (const it of data.education) {
         ensureSpace(predictEdu(it));
         const degLine = [it.degree, it.field].filter(Boolean).join(", ");
         const sub = (degLine ? " · " + degLine : "") + (it.gpa ? " · GPA " + it.gpa : "");
-        drawItemHead(it.school || "Okul", sub, dr(it.start, it.end, false));
+        drawItemHead(it.school || placeholder("school", language), sub, dr(it.start, it.end, false));
         if (it.notes) { setColor(60, 60, 60); drawWrapped(it.notes, M_L, CONTENT_W, sc(9.5), "normal"); }
         state.y += 1.5;
       }
     },
     projects: () => {
       if (!data.projects.length) return;
-      section("Projeler", predictProj(data.projects[0]));
+      section(sectionTitle("projects", language), predictProj(data.projects[0]));
       for (const it of data.projects) {
         ensureSpace(predictProj(it));
-        drawItemHead(it.name || "Proje", it.stack ? " · " + it.stack : "", it.link || "", true);
+        drawItemHead(it.name || placeholder("project", language), it.stack ? " · " + it.stack : "", it.link || "", true);
         drawBullets(it.description, M_L, CONTENT_W);
         state.y += 1.5;
       }
@@ -360,7 +341,7 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
     certifications: () => {
       const certs = (data.certifications ?? []).filter((c) => c.name);
       if (!certs.length) return;
-      section("Sertifikalar", 6.1);
+      section(sectionTitle("certifications", language), 6.1);
       for (const it of certs) {
         ensureSpace(6.1);
         drawItemHead(it.name, it.issuer ? " · " + it.issuer : "", fmtDatePdf(it.date));
@@ -371,7 +352,7 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
     awards: () => {
       const awds = (data.awards ?? []).filter((a) => a.title);
       if (!awds.length) return;
-      section("Ödüller", 6.1);
+      section(sectionTitle("awards", language), 6.1);
       for (const it of awds) {
         ensureSpace(6.1);
         drawItemHead(it.title, it.issuer ? " · " + it.issuer : "", fmtDatePdf(it.date));
@@ -382,7 +363,7 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
     skills: () => {
       const skillCats = data.skills.filter((c) => c.items.length > 0);
       if (!skillCats.length) return;
-      section("Yetenekler");
+      section(sectionTitle("skills", language));
       const catColW = 38;
       for (const c of skillCats) {
         const items = c.items.join(" · ");
@@ -404,7 +385,7 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
     languages: () => {
       const langs = (data.languages ?? []).filter(Boolean);
       if (!langs.length) return;
-      section("Yabancı Diller");
+      section(sectionTitle("languages", language));
       setF(sc(9.5), "normal"); setColor(40,40,40);
       const lineH = lh(sc(9.5), 1.35);
       ensureSpace(lineH);
@@ -414,7 +395,7 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
     hobbies: () => {
       const hobbies = (data.hobbies ?? []).filter(Boolean);
       if (!hobbies.length) return;
-      section("Hobiler");
+      section(sectionTitle("hobbies", language));
       setF(sc(9.5), "normal"); setColor(40,40,40);
       const lineH = lh(sc(9.5), 1.35);
       ensureSpace(lineH);
@@ -424,7 +405,7 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
     volunteer: () => {
       const vols = (data.volunteers ?? []).filter((v) => v.role);
       if (!vols.length) return;
-      section("Gönüllülük", 6.1);
+      section(sectionTitle("volunteer", language), 6.1);
       for (const it of vols) {
         const sub = [it.organization, it.location].filter(Boolean);
         drawItemHead(it.role, sub.length ? " · " + sub.join(" · ") : "", dr(it.start, it.end, it.current));
@@ -435,7 +416,7 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
     references: () => {
       const refs = (data.references ?? []).filter((r) => r.name);
       if (!refs.length) return;
-      section("Referanslar", 6.1);
+      section(sectionTitle("references", language), 6.1);
       for (const it of refs) {
         const sub = [it.title, it.company].filter(Boolean).join(", ");
         drawItemHead(it.name, sub ? " · " + sub : "", [it.email, it.phone].filter(Boolean).join(" · "));

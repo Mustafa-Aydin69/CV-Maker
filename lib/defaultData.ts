@@ -149,4 +149,5 @@ export const DEFAULT_SETTINGS: Settings = {
   fontScale:      1,
   template:       "classic",
   darkMode:       false,
+  language:       "tr",
 };

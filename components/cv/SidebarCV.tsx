@@ -9,6 +9,7 @@ import type { CVData, PreviewOptions } from "@/lib/types";
 import { CVHeader, ExperienceItem, EducationItem, ProjectItem, CertificationItem, AwardItem, VolunteerItem, ReferenceItem } from "./items";
 import { ICON } from "./Icons";
 import { dateRange } from "@/lib/format";
+import { sectionTitle, placeholder, type Lang } from "@/lib/i18n";
 
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
@@ -17,7 +18,7 @@ const SIDEBAR_ONLY = new Set(["skills", "languages", "hobbies"]);
 
 interface Block { key: string; render: () => ReactNode; }
 
-function buildMainBlocks(data: CVData, sectionOrder: string[], hiddenSections: string[]): Block[] {
+function buildMainBlocks(data: CVData, sectionOrder: string[], hiddenSections: string[], lang: Lang): Block[] {
   const blocks: Block[] = [];
   const addSection = (title: string, nodes: ReactNode[]) => {
     nodes.forEach((node, idx) => {
@@ -39,38 +40,38 @@ function buildMainBlocks(data: CVData, sectionOrder: string[], hiddenSections: s
     switch (id) {
       case "about":
         if ((data.about || "").trim())
-          addSection("Hakkımda", [<p className="cv__about" key="about">{data.about}</p>]);
+          addSection(sectionTitle("about", lang), [<p className="cv__about" key="about">{data.about}</p>]);
         break;
       case "experience":
         if (data.experience.length)
-          addSection("Deneyim", data.experience.map((it) => <ExperienceItem key={it._id} it={it} />));
+          addSection(sectionTitle("experience", lang), data.experience.map((it) => <ExperienceItem key={it._id} it={it} lang={lang} />));
         break;
       case "education":
         if (data.education.length)
-          addSection("Eğitim", data.education.map((it) => <EducationItem key={it._id} it={it} />));
+          addSection(sectionTitle("education", lang), data.education.map((it) => <EducationItem key={it._id} it={it} lang={lang} />));
         break;
       case "projects":
         if (data.projects.length)
-          addSection("Projeler", data.projects.map((it) => <ProjectItem key={it._id} it={it} />));
+          addSection(sectionTitle("projects", lang), data.projects.map((it) => <ProjectItem key={it._id} it={it} lang={lang} />));
         break;
       case "certifications": {
         const c = (data.certifications ?? []).filter((x) => x.name);
-        if (c.length) addSection("Sertifikalar", c.map((it) => <CertificationItem key={it._id} it={it} />));
+        if (c.length) addSection(sectionTitle("certifications", lang), c.map((it) => <CertificationItem key={it._id} it={it} lang={lang} />));
         break;
       }
       case "awards": {
         const a = (data.awards ?? []).filter((x) => x.title);
-        if (a.length) addSection("Ödüller", a.map((it) => <AwardItem key={it._id} it={it} />));
+        if (a.length) addSection(sectionTitle("awards", lang), a.map((it) => <AwardItem key={it._id} it={it} lang={lang} />));
         break;
       }
       case "volunteer": {
         const v = (data.volunteers ?? []).filter((x) => x.role);
-        if (v.length) addSection("Gönüllülük", v.map((it) => <VolunteerItem key={it._id} it={it} />));
+        if (v.length) addSection(sectionTitle("volunteer", lang), v.map((it) => <VolunteerItem key={it._id} it={it} lang={lang} />));
         break;
       }
       case "references": {
         const r = (data.references ?? []).filter((x) => x.name);
-        if (r.length) addSection("Referanslar", r.map((it) => <ReferenceItem key={it._id} it={it} />));
+        if (r.length) addSection(sectionTitle("references", lang), r.map((it) => <ReferenceItem key={it._id} it={it} lang={lang} />));
         break;
       }
     }
@@ -85,8 +86,8 @@ function buildMainBlocks(data: CVData, sectionOrder: string[], hiddenSections: s
 }
 
 // Sol şerit içeriği
-function SidebarContent({ data, showPhoto, accentHex }: { data: CVData; showPhoto: boolean; accentHex: string }) {
-  const fullName = [data.firstName, data.lastName].filter(Boolean).join(" ") || "Ad Soyad";
+function SidebarContent({ data, showPhoto, accentHex, lang }: { data: CVData; showPhoto: boolean; accentHex: string; lang: Lang }) {
+  const fullName = [data.firstName, data.lastName].filter(Boolean).join(" ") || placeholder("fullName", lang);
   const contacts: Array<{ icon: ReactNode; val: string }> = [
     data.phone    && { icon: ICON.phone,    val: data.phone    },
     data.email    && { icon: ICON.email,    val: data.email    },
@@ -119,7 +120,7 @@ function SidebarContent({ data, showPhoto, accentHex }: { data: CVData; showPhot
       {/* İletişim */}
       {contacts.length > 0 && (
         <div className="cvs__section">
-          <div className="cvs__sec-h">İletişim</div>
+          <div className="cvs__sec-h">{sectionTitle("contact", lang)}</div>
           {contacts.map((c, i) => (
             <div key={i} className="cvs__contact-row">
               <span className="cvs__contact-ic" aria-hidden="true">{c.icon}</span>
@@ -132,7 +133,7 @@ function SidebarContent({ data, showPhoto, accentHex }: { data: CVData; showPhot
       {/* Yetenekler */}
       {skillCats.length > 0 && (
         <div className="cvs__section">
-          <div className="cvs__sec-h">Yetenekler</div>
+          <div className="cvs__sec-h">{sectionTitle("skills", lang)}</div>
           {skillCats.map((c, i) => (
             <div key={i} className="cvs__skill-cat">
               <div className="cvs__skill-name">{c.name}</div>
@@ -145,7 +146,7 @@ function SidebarContent({ data, showPhoto, accentHex }: { data: CVData; showPhot
       {/* Diller */}
       {langs.length > 0 && (
         <div className="cvs__section">
-          <div className="cvs__sec-h">Yabancı Diller</div>
+          <div className="cvs__sec-h">{sectionTitle("languages", lang)}</div>
           {langs.map((l, i) => <div key={i} className="cvs__skill-items">{l}</div>)}
         </div>
       )}
@@ -153,7 +154,7 @@ function SidebarContent({ data, showPhoto, accentHex }: { data: CVData; showPhot
       {/* Hobiler */}
       {hobbies.length > 0 && (
         <div className="cvs__section">
-          <div className="cvs__sec-h">Hobiler</div>
+          <div className="cvs__sec-h">{sectionTitle("hobbies", lang)}</div>
           <div className="cvs__skill-items">{hobbies.join(" · ")}</div>
         </div>
       )}
@@ -165,7 +166,7 @@ const SIDEBAR_W    = 210; // px
 const INNER_PAD    = 32;  // main column inner padding
 
 export default function SidebarCV({ data, options }: { data: CVData; options: PreviewOptions }) {
-  const { showPhoto, font, accent, lineHeight, zoom, sectionOrder, hiddenSections, paddingPx, fontScale } = options;
+  const { showPhoto, font, accent, lineHeight, zoom, sectionOrder, hiddenSections, paddingPx, fontScale, language } = options;
 
   // Ana sütun içerik genişliği (ölçüm için)
   const MAIN_CONTENT_W = 794 - SIDEBAR_W - INNER_PAD * 2;
@@ -180,8 +181,8 @@ export default function SidebarCV({ data, options }: { data: CVData; options: Pr
 
   const accentHex = accent;
   const blocks = useMemo(
-    () => buildMainBlocks(data, sectionOrder, hiddenSections),
-    [data, sectionOrder, hiddenSections],
+    () => buildMainBlocks(data, sectionOrder, hiddenSections, language),
+    [data, sectionOrder, hiddenSections, language],
   );
 
   const measureRef = useRef<HTMLDivElement>(null);
@@ -223,7 +224,7 @@ export default function SidebarCV({ data, options }: { data: CVData; options: Pr
         {pages.map((idxs, pi) => (
           <div className="cv-page-wrap" key={pi}>
             <div className="cv cv-page cv--sidebar" style={cvStyle} data-page={pi + 1}>
-              <SidebarContent data={data} showPhoto={showPhoto} accentHex={accentHex} />
+              <SidebarContent data={data} showPhoto={showPhoto} accentHex={accentHex} lang={language} />
               <div className="cvs__main">
                 {idxs.filter((i) => i < blocks.length).map((i) => <Fragment key={blocks[i].key}>{blocks[i].render()}</Fragment>)}
               </div>
