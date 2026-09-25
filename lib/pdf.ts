@@ -121,7 +121,7 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
   try {
     fonts = await loadFonts();
   } catch (err) {
-    console.warn("[CV Maker] Roboto yüklenemedi, yedek (görüntü) moda geçiliyor:", err);
+    console.warn("[CV Studio] Roboto yüklenemedi, yedek (görüntü) moda geçiliyor:", err);
     return exportPdfFromDom(data);
   }
 
@@ -449,7 +449,7 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
     title: `${fullName} — CV`,
     subject: "CV / Özgeçmiş",
     author: fullName,
-    creator: "CV Maker",
+    creator: "CV Studio",
   });
 
   doc.save(safeName([data.firstName, data.lastName].filter(Boolean).join(" ") || "CV") + "-CV.pdf");

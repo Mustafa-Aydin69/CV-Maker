@@ -1,99 +1,46 @@
-// app/page.tsx — Ana uygulama
+// app/page.tsx — Giriş (karşılama) sayfası — "/"
 "use client";
 
-import { useEffect, useMemo } from "react";
-import type { Settings } from "@/lib/types";
-import {
-  DEFAULT_SETTINGS, SETTINGS_KEY, FONT_OPTIONS, ACCENT_OPTIONS,
-  LINE_HEIGHT_OPTIONS, MARGIN_OPTIONS, DEFAULT_SECTION_ORDER,
-} from "@/lib/defaultData";
-import { computeAtsScore } from "@/lib/atsScore";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import type { CVData, Settings } from "@/lib/types";
+import { DEFAULT_SETTINGS, SETTINGS_KEY, EMPTY_DATA, DEFAULT_DATA } from "@/lib/defaultData";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useDocuments } from "@/hooks/useDocuments";
-import { useHistory } from "@/hooks/useHistory";
-import CVForm from "@/components/form/CVForm";
-import PreviewPane from "@/components/PreviewPane";
-import SettingsPanel from "@/components/SettingsPanel";
+import Landing from "@/components/Landing";
+import UploadCvModal from "@/components/UploadCvModal";
 
-export default function Page() {
+export default function LandingPage() {
+  const router = useRouter();
+  const [uploadOpen, setUploadOpen] = useState(false);
   const docsMgr = useDocuments();
-  const [settings, setSettings] = useLocalStorage<Settings>(SETTINGS_KEY, DEFAULT_SETTINGS);
-
-  const patchSettings = (patch: Partial<Settings>) =>
-    setSettings((prev) => ({ ...prev, ...patch }));
-
-  const { data, setData, undo, redo, canUndo, canRedo } = useHistory(
-    docsMgr.activeData,
-    docsMgr.setActiveData,
-    docsMgr.activeId,
-  );
-
-  // Ctrl+Z / Ctrl+Y klavye kısayolları
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      const mod = e.ctrlKey || e.metaKey;
-      if (!mod) return;
-      if (e.key === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
-      if (e.key === "y" || (e.key === "z" && e.shiftKey)) { e.preventDefault(); redo(); }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [undo, redo]);
-
-  const score      = useMemo(() => computeAtsScore(data), [data]);
-  const font       = FONT_OPTIONS.find((f) => f.id === settings.fontId)       || FONT_OPTIONS[0];
-  const accent     = ACCENT_OPTIONS.find((a) => a.id === settings.accentId)   || ACCENT_OPTIONS[0];
-  const lineHeight = LINE_HEIGHT_OPTIONS.find((l) => l.id === settings.lineHeightId)?.val ?? "1.45";
-  const margin     = MARGIN_OPTIONS.find((m) => m.id === settings.marginId)   || MARGIN_OPTIONS[1];
-  const sectionOrder   = settings.sectionOrder   ?? DEFAULT_SECTION_ORDER;
-  const hiddenSections = settings.hiddenSections ?? [];
-  const fontScale      = settings.fontScale      ?? 1;
-  const template       = settings.template       ?? "classic";
-  const language       = settings.language       ?? "tr";
-
-  // Özel renk desteği
-  const resolvedAccent = settings.accentId === "custom"
-    ? { id: "custom", val: settings.accentCustom ?? "#2563eb", label: "Özel" }
-    : accent;
+  const [settings] = useLocalStorage<Settings>(SETTINGS_KEY, DEFAULT_SETTINGS);
 
   return (
-    <div className="app">
-      <CVForm
-        data={data}
-        setData={setData}
-        settings={settings}
-        setSettings={patchSettings}
-        docs={docsMgr.docs}
-        activeId={docsMgr.activeId}
-        switchDoc={docsMgr.switchDoc}
-        createDoc={docsMgr.createDoc}
-        duplicateDoc={docsMgr.duplicateDoc}
-        deleteDoc={docsMgr.deleteDoc}
-        renameDoc={docsMgr.renameDoc}
-        undo={undo}
-        redo={redo}
-        canUndo={canUndo}
-        canRedo={canRedo}
-        score={score}
-        lastSavedAt={docsMgr.lastSavedAt}
+    <>
+      <Landing
+        darkMode={settings.darkMode}
+        onStartFresh={() => {
+          docsMgr.createDoc(EMPTY_DATA, `CV ${docsMgr.docs.length + 1}`);
+          router.push("/editor");
+        }}
+        onOpenUpload={() => setUploadOpen(true)}
+        onLoadSample={() => {
+          docsMgr.createDoc(DEFAULT_DATA, `CV ${docsMgr.docs.length + 1}`);
+          router.push("/editor");
+        }}
       />
-      <PreviewPane
-        data={data}
-        settings={settings}
-        setSettings={patchSettings}
-        score={score}
-        font={font}
-        accent={resolvedAccent}
-        lineHeight={lineHeight}
-        paddingPx={margin.px}
-        paddingMm={margin.mm}
-        fontScale={fontScale}
-        sectionOrder={sectionOrder}
-        hiddenSections={hiddenSections}
-        template={template}
-        language={language}
-      />
-      <SettingsPanel settings={settings} setSettings={patchSettings} score={score} />
-    </div>
+      {uploadOpen && (
+        <UploadCvModal
+          darkMode={settings.darkMode}
+          onClose={() => setUploadOpen(false)}
+          onImported={(imported: CVData, fileName: string) => {
+            docsMgr.createDoc(imported, fileName || `CV ${docsMgr.docs.length + 1}`);
+            setUploadOpen(false);
+            router.push("/editor");
+          }}
+        />
+      )}
+    </>
   );
 }

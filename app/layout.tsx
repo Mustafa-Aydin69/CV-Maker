@@ -20,7 +20,7 @@ const sourceSerif  = Source_Serif_4({ subsets: ["latin","latin-ext"], weight: ["
 const allFonts = [manrope, inter, roboto, openSans, lato, montserrat, poppins, nunito, merriweather, playfair, sourceSerif];
 
 export const metadata: Metadata = {
-  title: "CV Maker — ATS Uyumlu",
+  title: "CV Studio — ATS Uyumlu",
   description: "ATS uyumlu, tek sütun, A4 CV oluşturucu",
 };
 

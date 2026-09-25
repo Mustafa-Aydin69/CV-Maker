@@ -244,6 +244,11 @@ function SectionOrderList({
   );
 }
 
+const BackIcon = () => (
+  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+  </svg>
+);
 const SlidersIcon = () => (
   <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
     <line x1="4" y1="6" x2="20" y2="6" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="18" x2="20" y2="18" />
@@ -300,7 +305,7 @@ function DocBar({
   docs: CVDocument[];
   activeId: string;
   switchDoc: (id: string) => void;
-  createDoc: () => void;
+  createDoc: (initialData?: CVData, name?: string) => string;
   duplicateDoc: () => void;
   deleteDoc: (id: string) => void;
   renameDoc: (id: string, name: string) => void;
@@ -359,7 +364,7 @@ function DocBar({
       </div>
 
       <div className="doc-bar__actions">
-        <button className="icon-btn" onClick={createDoc} title="Yeni CV oluştur">
+        <button className="icon-btn" onClick={() => createDoc()} title="Yeni CV oluştur">
           <PlusIcon />
         </button>
         <button className="icon-btn" onClick={duplicateDoc} title="Bu CV'yi kopyala">
@@ -416,6 +421,7 @@ export default function CVForm({
   canRedo,
   score,
   lastSavedAt,
+  onBackToLanding,
 }: {
   data: CVData;
   setData: (d: CVData) => void;
@@ -424,7 +430,7 @@ export default function CVForm({
   docs: CVDocument[];
   activeId: string;
   switchDoc: (id: string) => void;
-  createDoc: () => void;
+  createDoc: (initialData?: CVData, name?: string) => string;
   duplicateDoc: () => void;
   deleteDoc: (id: string) => void;
   renameDoc: (id: string, name: string) => void;
@@ -434,6 +440,7 @@ export default function CVForm({
   canRedo: boolean;
   score: AtsScore;
   lastSavedAt: number;
+  onBackToLanding: () => void;
 }) {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
@@ -465,10 +472,18 @@ export default function CVForm({
       <div className="topbar">
         <h1>
           <span className="dot" />
-          CV Maker
+          CV Studio
           <small>ATS uyumlu</small>
         </h1>
         <div className="topbar__actions">
+          <button
+            className="icon-btn"
+            onClick={onBackToLanding}
+            title="Giriş sayfasına dön"
+            aria-label="Giriş sayfasına dön"
+          >
+            <BackIcon />
+          </button>
           <button
             className="icon-btn"
             onClick={undo}

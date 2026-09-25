@@ -1,4 +1,4 @@
-# CV Maker — ATS Uyumlu
+# CV Studio — ATS Uyumlu
 
 > Next.js 14 · TypeScript · jsPDF · html2canvas
 
