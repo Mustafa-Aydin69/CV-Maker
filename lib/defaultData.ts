@@ -61,6 +61,7 @@ export const DEFAULT_DATA: CVData = {
   languages: ["İngilizce (C1)", "Almanca (A2)"],
   hobbies:   ["Açık kaynak geliştirme", "Satranç", "Trekking"],
   volunteers: [],
+  activities: [],
   references: [],
   customSections: [],
 };
@@ -72,7 +73,7 @@ export const EMPTY_DATA: CVData = {
   experience:[], education:[], projects:[], certifications:[], awards:[],
   skills:[{ _id: 1, name: "Diller", items:[] }],
   languages:[], hobbies:[],
-  volunteers:[], references:[], customSections:[],
+  volunteers:[], activities:[], references:[], customSections:[],
 };
 
 // ── Font seçenekleri ──────────────────────────────────────────────────────────
@@ -122,6 +123,7 @@ export const MARGIN_OPTIONS: MarginOption[] = [
 export const SECTION_DEFS = [
   { id:"about",          label:"Profesyonel Özet / Hakkımda" },
   { id:"experience",     label:"İş Deneyimleri"              },
+  { id:"activities",     label:"Takımlar & Topluluklar"      },
   { id:"education",      label:"Eğitim Bilgileri"            },
   { id:"projects",       label:"Projeler"                    },
   { id:"certifications", label:"Sertifikalar & Kurslar"      },
@@ -134,6 +136,20 @@ export const SECTION_DEFS = [
 ] as const;
 
 export const DEFAULT_SECTION_ORDER: string[] = SECTION_DEFS.map((s) => s.id);
+
+// localStorage'daki eski sıralamalar sonradan eklenen bölümleri içermez; onları
+// varsayılan sıradaki komşusunun hemen arkasına yerleştirerek görünür kılarız.
+export function normalizeSectionOrder(order: string[] | undefined): string[] {
+  if (!order) return DEFAULT_SECTION_ORDER;
+  const result = [...order];
+  DEFAULT_SECTION_ORDER.forEach((id, i) => {
+    if (result.includes(id)) return;
+    const prev = DEFAULT_SECTION_ORDER[i - 1];
+    const at = prev ? result.indexOf(prev) : -1;
+    result.splice(at + 1, 0, id);
+  });
+  return result;
+}
 
 // ── Varsayılan ayarlar ────────────────────────────────────────────────────────
 export const DEFAULT_SETTINGS: Settings = {

@@ -24,6 +24,11 @@ export interface Volunteer {
   _id: number; role: string; organization: string; location: string;
   start: string; end: string; current: boolean; description: string;
 }
+// Kulüp, yarışma takımı (Teknofest vb.) ve topluluk rolleri; gerçek iş/staj deneyiminden ayrı tutulur.
+export interface Activity {
+  _id: number; role: string; organization: string;
+  start: string; end: string; current: boolean; description: string;
+}
 export interface Reference {
   _id: number; name: string; title: string; company: string;
   email: string; phone: string; note: string;
@@ -46,6 +51,7 @@ export interface CVData {
   certifications: Certification[];
   awards: Award[];
   volunteers: Volunteer[];
+  activities: Activity[];
   references: Reference[];
   customSections: CustomSection[];
   skills: SkillCategory[];
@@ -55,6 +61,8 @@ export interface CVData {
 
 export interface FontOption   { id: string; label: string; css: string; }
 export interface AccentOption { id: string; val: string; label: string; }
+
+export type TemplateId = "classic" | "sidebar" | "modern" | "minimal" | "compact";
 
 export interface Settings {
   showPhoto: boolean;
@@ -67,7 +75,7 @@ export interface Settings {
   hiddenSections: string[];
   marginId: string;
   fontScale: number;
-  template: "classic" | "sidebar";
+  template: TemplateId;
   darkMode: boolean;
   language: "tr" | "en";
 }
@@ -77,7 +85,7 @@ export interface PreviewOptions {
   lineHeight: string; zoom: number;
   sectionOrder: string[]; hiddenSections: string[];
   paddingPx: number; fontScale: number;
-  template: "classic" | "sidebar";
+  template: TemplateId;
   language: "tr" | "en";
 }
 

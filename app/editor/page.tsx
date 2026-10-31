@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import type { Settings } from "@/lib/types";
 import {
   DEFAULT_SETTINGS, SETTINGS_KEY, FONT_OPTIONS, ACCENT_OPTIONS,
-  LINE_HEIGHT_OPTIONS, MARGIN_OPTIONS, DEFAULT_SECTION_ORDER,
+  LINE_HEIGHT_OPTIONS, MARGIN_OPTIONS, normalizeSectionOrder,
 } from "@/lib/defaultData";
 import { computeAtsScore } from "@/lib/atsScore";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
@@ -19,7 +19,11 @@ import SettingsPanel from "@/components/SettingsPanel";
 export default function EditorPage() {
   const router = useRouter();
   const docsMgr = useDocuments();
-  const [settings, setSettings] = useLocalStorage<Settings>(SETTINGS_KEY, DEFAULT_SETTINGS);
+  const [storedSettings, setSettings] = useLocalStorage<Settings>(SETTINGS_KEY, DEFAULT_SETTINGS);
+  const settings = useMemo(
+    () => ({ ...storedSettings, sectionOrder: normalizeSectionOrder(storedSettings.sectionOrder) }),
+    [storedSettings],
+  );
 
   const patchSettings = (patch: Partial<Settings>) =>
     setSettings((prev) => ({ ...prev, ...patch }));
@@ -47,7 +51,7 @@ export default function EditorPage() {
   const accent     = ACCENT_OPTIONS.find((a) => a.id === settings.accentId)   || ACCENT_OPTIONS[0];
   const lineHeight = LINE_HEIGHT_OPTIONS.find((l) => l.id === settings.lineHeightId)?.val ?? "1.45";
   const margin     = MARGIN_OPTIONS.find((m) => m.id === settings.marginId)   || MARGIN_OPTIONS[1];
-  const sectionOrder   = settings.sectionOrder   ?? DEFAULT_SECTION_ORDER;
+  const sectionOrder   = settings.sectionOrder;
   const hiddenSections = settings.hiddenSections ?? [];
   const fontScale      = settings.fontScale      ?? 1;
   const template       = settings.template       ?? "classic";

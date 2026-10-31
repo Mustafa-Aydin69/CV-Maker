@@ -6,6 +6,7 @@ import type { CVData, Settings } from "@/lib/types";
 import { DEFAULT_DATA, EMPTY_DATA, FONT_OPTIONS, ACCENT_OPTIONS, LINE_HEIGHT_OPTIONS } from "@/lib/defaultData";
 import type { CVDocument } from "@/hooks/useDocuments";
 import { SECTION_DEFS, MARGIN_OPTIONS } from "@/lib/defaultData";
+import { TEMPLATE_OPTIONS } from "@/lib/templates";
 import PersonalSection from "./PersonalSection";
 import { AboutSection, ExperienceSection, EducationSection, ProjectsSection } from "./sections";
 import SkillsSection from "./SkillsSection";
@@ -15,6 +16,7 @@ import AwardsSection from "./AwardsSection";
 import HobbiesSection from "./HobbiesSection";
 import JobMatchPanel from "./JobMatchPanel";
 import VolunteerSection from "./VolunteerSection";
+import ActivitySection from "./ActivitySection";
 import ReferencesSection from "./ReferencesSection";
 import CustomSectionsPanel from "./CustomSectionsPanel";
 import ShortcutsPanel from "@/components/ShortcutsPanel";
@@ -131,13 +133,14 @@ function StylePanel({
       <div className="template-row">
         <span className="template-row__label">Şablon</span>
         <div className="template-row__opts">
-          {(["classic", "sidebar"] as const).map((t) => (
+          {TEMPLATE_OPTIONS.map((t) => (
             <button
-              key={t}
-              className={"template-btn" + (settings.template === t ? " is-active" : "")}
-              onClick={() => setSettings({ template: t })}
+              key={t.id}
+              className={"template-btn" + (settings.template === t.id ? " is-active" : "")}
+              onClick={() => setSettings({ template: t.id })}
+              title={t.hint}
             >
-              {t === "classic" ? "Klasik" : "Şeritli"}
+              {t.label}
             </button>
           ))}
         </div>
@@ -545,6 +548,7 @@ export default function CVForm({
         <PersonalSection       data={data} setData={setData} />
         <AboutSection          data={data} setData={setData} />
         <ExperienceSection     data={data} setData={setData} />
+        <ActivitySection       data={data} setData={setData} />
         <EducationSection      data={data} setData={setData} />
         <ProjectsSection       data={data} setData={setData} />
         <CertificationsSection data={data} setData={setData} />

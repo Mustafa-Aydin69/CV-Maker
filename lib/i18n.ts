@@ -24,6 +24,7 @@ export const SECTION_TITLES: Record<string, Dict> = {
   languages:      { tr: "Yabancı Diller", en: "Languages" },
   hobbies:        { tr: "Hobiler",        en: "Hobbies" },
   volunteer:      { tr: "Gönüllülük",     en: "Volunteering" },
+  activities:     { tr: "Takımlar & Topluluklar", en: "Leadership & Activities" },
   references:     { tr: "Referanslar",    en: "References" },
   contact:        { tr: "İletişim",       en: "Contact" },
 };
@@ -36,6 +37,7 @@ export const PLACEHOLDERS: Record<string, Dict> = {
   cert:     { tr: "Sertifika",   en: "Certificate" },
   award:    { tr: "Ödül",        en: "Award" },
   volRole:  { tr: "Gönüllü Rol", en: "Volunteer Role" },
+  actRole:  { tr: "Rol",         en: "Role" },
   reference:{ tr: "Referans",    en: "Reference" },
 };
 

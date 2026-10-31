@@ -11,9 +11,10 @@ import {
   TextRun,
   UnderlineType,
 } from "docx";
-import type { CVData } from "./types";
+import type { CVData, TemplateId } from "./types";
 import { dateRange, fmtMonth } from "./format";
 import { sectionTitle, placeholder, type Lang } from "./i18n";
+import { TEMPLATE_STYLES, type TemplateStyle } from "./templates";
 
 // ── Yardımcılar ──────────────────────────────────────────────────────────────
 
@@ -22,20 +23,22 @@ function hex(color: string): string {
 }
 
 /** Bölüm başlığı paragrafı */
-function sectionHead(title: string): Paragraph {
+function sectionHead(title: string, ts: TemplateStyle, accentHex: string): Paragraph {
+  const color = ts.headingColor === "accent" ? accentHex : ts.headingColor === "gray" ? "777777" : "000000";
   return new Paragraph({
     children: [
       new TextRun({
-        text: title.toUpperCase(),
+        text: ts.headingUppercase ? title.toUpperCase() : title,
         bold: true,
-        size: 21,         // 10.5pt
-        color: "000000",
+        size: Math.round(ts.headingSizePt * 2),   // docx yarım punto ister
+        color,
       }),
     ],
-    border: {
-      bottom: { color: "BBBBBB", style: BorderStyle.SINGLE, size: 4 },
-    },
-    spacing: { before: 240, after: 100 },
+    border:
+      ts.heading === "underline" ? { bottom: { color: "BBBBBB", style: BorderStyle.SINGLE, size: 4 } } :
+      ts.heading === "bar"       ? { left:   { color: accentHex, style: BorderStyle.SINGLE, size: 18, space: 6 } } :
+      undefined,
+    spacing: { before: Math.round(240 * ts.gap), after: Math.round(100 * ts.gap) },
   });
 }
 
@@ -105,8 +108,11 @@ export async function exportDocx(
   sectionOrder: string[] = DEFAULT_SECTION_ORDER_DOCX,
   hiddenSections: string[] = [],
   language: Lang = "tr",
+  template: TemplateId = "classic",
 ): Promise<void> {
   const accentHex = hex(accentColor);
+  const ts = TEMPLATE_STYLES[template] ?? TEMPLATE_STYLES.classic;
+  const head = (id: string) => sectionHead(sectionTitle(id, language), ts, accentHex);
   const fullName = [data.firstName, data.lastName].filter(Boolean).join(" ") || placeholder("fullName", language);
 
   const children: Paragraph[] = [];
@@ -114,7 +120,7 @@ export async function exportDocx(
   // ── İsim ───────────────────────────────────────────────────────────────────
   children.push(
     new Paragraph({
-      children: [new TextRun({ text: fullName, bold: true, size: 48, color: "000000" })],
+      children: [new TextRun({ text: fullName, bold: ts.nameBold, size: 48, color: ts.nameAccent ? accentHex : "000000" })],
       spacing: { after: 80 },
     })
   );
@@ -146,12 +152,12 @@ export async function exportDocx(
   const sectionRenderers: Record<string, () => void> = {
     about: () => {
       if (!(data.about || "").trim()) return;
-      children.push(sectionHead(sectionTitle("about", language)));
+      children.push(head("about"));
       children.push(plain(data.about.trim(), { after: 80 }));
     },
     experience: () => {
       if (!data.experience.length) return;
-      children.push(sectionHead(sectionTitle("experience", language)));
+      children.push(head("experience"));
       for (const it of data.experience) {
         const sub = [it.company, it.location].filter(Boolean).join(" · ");
         children.push(itemHead(it.role || placeholder("position", language), sub ? " · " + sub : "", dateRange(it.start, it.end, it.current, language), accentHex));
@@ -161,7 +167,7 @@ export async function exportDocx(
     },
     education: () => {
       if (!data.education.length) return;
-      children.push(sectionHead(sectionTitle("education", language)));
+      children.push(head("education"));
       for (const it of data.education) {
         const deg = [it.degree, it.field].filter(Boolean).join(", ");
         const sub = [deg, it.gpa ? "GPA " + it.gpa : ""].filter(Boolean).join(" · ");
@@ -172,7 +178,7 @@ export async function exportDocx(
     },
     projects: () => {
       if (!data.projects.length) return;
-      children.push(sectionHead(sectionTitle("projects", language)));
+      children.push(head("projects"));
       for (const it of data.projects) {
         children.push(itemHead(it.name || placeholder("project", language), it.stack ? " · " + it.stack : "", it.link || "", accentHex));
         children.push(...bullets(it.description));
@@ -182,7 +188,7 @@ export async function exportDocx(
     certifications: () => {
       const certs = (data.certifications ?? []).filter((c) => c.name);
       if (!certs.length) return;
-      children.push(sectionHead(sectionTitle("certifications", language)));
+      children.push(head("certifications"));
       for (const it of certs) {
         children.push(itemHead(it.name, it.issuer ? " · " + it.issuer : "", fmtMonth(it.date, language), accentHex));
         if (it.link) children.push(plain(it.link, { size: 17, color: "777777" }));
@@ -192,7 +198,7 @@ export async function exportDocx(
     awards: () => {
       const awds = (data.awards ?? []).filter((a) => a.title);
       if (!awds.length) return;
-      children.push(sectionHead(sectionTitle("awards", language)));
+      children.push(head("awards"));
       for (const it of awds) {
         children.push(itemHead(it.title, it.issuer ? " · " + it.issuer : "", fmtMonth(it.date, language), accentHex));
         if (it.note) children.push(plain(it.note));
@@ -202,7 +208,7 @@ export async function exportDocx(
     skills: () => {
       const skillCats = data.skills.filter((c) => c.items.length > 0);
       if (!skillCats.length) return;
-      children.push(sectionHead(sectionTitle("skills", language)));
+      children.push(head("skills"));
       for (const c of skillCats) {
         children.push(new Paragraph({
           children: [
@@ -216,19 +222,19 @@ export async function exportDocx(
     languages: () => {
       const langs = (data.languages ?? []).filter(Boolean);
       if (!langs.length) return;
-      children.push(sectionHead(sectionTitle("languages", language)));
+      children.push(head("languages"));
       children.push(plain(langs.join("  ·  ")));
     },
     hobbies: () => {
       const hobbies = (data.hobbies ?? []).filter(Boolean);
       if (!hobbies.length) return;
-      children.push(sectionHead(sectionTitle("hobbies", language)));
+      children.push(head("hobbies"));
       children.push(plain(hobbies.join("  ·  ")));
     },
     volunteer: () => {
       const vols = (data.volunteers ?? []).filter((v) => v.role);
       if (!vols.length) return;
-      children.push(sectionHead(sectionTitle("volunteer", language)));
+      children.push(head("volunteer"));
       for (const it of vols) {
         const sub = [it.organization, it.location].filter(Boolean).join(" · ");
         children.push(itemHead(it.role, sub ? " · " + sub : "", dateRange(it.start, it.end, it.current, language), accentHex));
@@ -236,10 +242,20 @@ export async function exportDocx(
         children.push(new Paragraph({ children: [], spacing: { after: 80 } }));
       }
     },
+    activities: () => {
+      const acts = (data.activities ?? []).filter((a) => a.role || a.organization);
+      if (!acts.length) return;
+      children.push(head("activities"));
+      for (const it of acts) {
+        children.push(itemHead(it.role || placeholder("actRole", language), it.organization ? " · " + it.organization : "", dateRange(it.start, it.end, it.current, language), accentHex));
+        children.push(...bullets(it.description));
+        children.push(new Paragraph({ children: [], spacing: { after: 80 } }));
+      }
+    },
     references: () => {
       const refs = (data.references ?? []).filter((r) => r.name);
       if (!refs.length) return;
-      children.push(sectionHead(sectionTitle("references", language)));
+      children.push(head("references"));
       for (const it of refs) {
         const sub = [it.title, it.company].filter(Boolean).join(", ");
         const contact = [it.email, it.phone].filter(Boolean).join(" · ");
@@ -255,7 +271,7 @@ export async function exportDocx(
 
   // Özel bölümler
   for (const cs of (data.customSections ?? []).filter((c) => c.title)) {
-    children.push(sectionHead(cs.title));
+    children.push(sectionHead(cs.title, ts, accentHex));
     children.push(...bullets(cs.content));
     children.push(new Paragraph({ children: [], spacing: { after: 80 } }));
   }

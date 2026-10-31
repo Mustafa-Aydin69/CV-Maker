@@ -64,6 +64,14 @@ export function extractCvEvidence(data: CVData): CvEvidence[] {
     ev.push(makeEvidence("volunteer", text.slice(0, 200), EVIDENCE_STRENGTH.volunteer, findConceptByText(text)?.id));
   }
 
+  // Takım/kulüp çalışması uygulamalı iş kanıtıdır; ağırlığı proje ile aynı tutulur.
+  for (const act of (data.activities ?? [])) {
+    const lines = (act.description ?? "").split("\n").filter(Boolean);
+    for (const line of lines) ev.push(makeEvidence("project", line, EVIDENCE_STRENGTH.project, findConceptByText(line)?.id));
+    const head = [act.role, act.organization].filter(Boolean).join(" ");
+    if (head) ev.push(makeEvidence("project", head, EVIDENCE_STRENGTH.project, findConceptByText(head)?.id));
+  }
+
   for (const award of (data.awards ?? [])) {
     if (!award.title) continue;
     ev.push(makeEvidence("certificate", award.title, EVIDENCE_STRENGTH.certificate, findConceptByText(award.title)?.id));
