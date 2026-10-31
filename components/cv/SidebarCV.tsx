@@ -6,7 +6,7 @@ import {
   Fragment, type CSSProperties, type ReactNode,
 } from "react";
 import type { CVData, PreviewOptions } from "@/lib/types";
-import { CVHeader, ExperienceItem, EducationItem, ProjectItem, CertificationItem, AwardItem, VolunteerItem, ReferenceItem } from "./items";
+import { CVHeader, ExperienceItem, EducationItem, ProjectItem, CertificationItem, AwardItem, VolunteerItem, ActivityItem, ReferenceItem } from "./items";
 import { ICON } from "./Icons";
 import { dateRange } from "@/lib/format";
 import { sectionTitle, placeholder, type Lang } from "@/lib/i18n";
@@ -67,6 +67,11 @@ function buildMainBlocks(data: CVData, sectionOrder: string[], hiddenSections: s
       case "volunteer": {
         const v = (data.volunteers ?? []).filter((x) => x.role);
         if (v.length) addSection(sectionTitle("volunteer", lang), v.map((it) => <VolunteerItem key={it._id} it={it} lang={lang} />));
+        break;
+      }
+      case "activities": {
+        const a = (data.activities ?? []).filter((x) => x.role || x.organization);
+        if (a.length) addSection(sectionTitle("activities", lang), a.map((it) => <ActivityItem key={it._id} it={it} lang={lang} />));
         break;
       }
       case "references": {

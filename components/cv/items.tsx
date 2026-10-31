@@ -1,6 +1,6 @@
 // components/cv/items.tsx — CV başlığı ve madde bileşenleri
 import type { ReactNode } from "react";
-import type { CVData, Experience, Education, Project, Certification, Award, Volunteer, Reference } from "@/lib/types";
+import type { CVData, Experience, Education, Project, Certification, Award, Volunteer, Activity, Reference } from "@/lib/types";
 import { dateRange, fmtMonth } from "@/lib/format";
 import { placeholder, type Lang } from "@/lib/i18n";
 import { ICON } from "./Icons";
@@ -144,6 +144,22 @@ export function VolunteerItem({ it, lang }: { it: Volunteer; lang: Lang }) {
           <span className="cv__item-title">{it.role || placeholder("volRole", lang)}</span>
           {it.organization && <span className="cv__item-sub"> · {it.organization}</span>}
           {it.location && <span className="cv__item-sub" style={{ color:"#666" }}> · {it.location}</span>}
+        </div>
+        {range && <span className="cv__item-meta">{range}</span>}
+      </div>
+      <Bullets text={it.description} />
+    </div>
+  );
+}
+
+export function ActivityItem({ it, lang }: { it: Activity; lang: Lang }) {
+  const range = dateRange(it.start, it.end, it.current, lang);
+  return (
+    <div className="cv__item">
+      <div className="cv__item-head">
+        <div>
+          <span className="cv__item-title">{it.role || placeholder("actRole", lang)}</span>
+          {it.organization && <span className="cv__item-sub"> · {it.organization}</span>}
         </div>
         {range && <span className="cv__item-meta">{range}</span>}
       </div>

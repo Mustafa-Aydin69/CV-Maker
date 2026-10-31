@@ -6,7 +6,7 @@ import {
   Fragment, type ReactNode, type CSSProperties,
 } from "react";
 import type { CVData, PreviewOptions } from "@/lib/types";
-import { CVHeader, ExperienceItem, EducationItem, ProjectItem, CertificationItem, AwardItem, VolunteerItem, ReferenceItem } from "./items";
+import { CVHeader, ExperienceItem, EducationItem, ProjectItem, CertificationItem, AwardItem, VolunteerItem, ActivityItem, ReferenceItem } from "./items";
 import { sectionTitle, type Lang } from "@/lib/i18n";
 import SidebarCV from "./SidebarCV";
 
@@ -104,6 +104,12 @@ function buildBlocks(
           addSection(sectionTitle("volunteer", lang), vols.map((it) => <VolunteerItem key={it._id} it={it} lang={lang} />));
         break;
       }
+      case "activities": {
+        const acts = (data.activities ?? []).filter((a) => a.role || a.organization);
+        if (acts.length)
+          addSection(sectionTitle("activities", lang), acts.map((it) => <ActivityItem key={it._id} it={it} lang={lang} />));
+        break;
+      }
       case "references": {
         const refs = (data.references ?? []).filter((r) => r.name);
         if (refs.length)
@@ -192,14 +198,14 @@ function ClassicCV({ data, options }: { data: CVData; options: PreviewOptions })
     const ro = new ResizeObserver(recompute);
     Array.from(c.children).forEach((ch) => ro.observe(ch));
     return () => ro.disconnect();
-  }, [blocks, font, accent, lineHeight, showPhoto, paddingPx, fontScale]);
+  }, [blocks, font, accent, lineHeight, showPhoto, paddingPx, fontScale, options.template]);
 
   return (
     <>
       <div className="cv-pages" style={{ zoom } as CSSProperties}>
         {pages.map((idxs, pi) => (
           <div className="cv-page-wrap" key={pi}>
-            <div className="cv cv-page" style={cvStyle} data-page={pi + 1}>
+            <div className={`cv cv-page cv--${options.template}`} style={cvStyle} data-page={pi + 1}>
               {idxs.filter((i) => i < blocks.length).map((i) => <Fragment key={blocks[i].key}>{blocks[i].render()}</Fragment>)}
             </div>
             {pages.length > 1 && (
@@ -208,7 +214,8 @@ function ClassicCV({ data, options }: { data: CVData; options: PreviewOptions })
           </div>
         ))}
       </div>
-      <div className="cv cv--measure" style={cvStyle} ref={measureRef} aria-hidden="true">
+      {/* Ölçüm kabı da aynı şablon sınıfını almalı; yoksa Kompakt'ın sıkı aralığı sayfa bölmeye yansımaz. */}
+      <div className={`cv cv--measure cv--${options.template}`} style={cvStyle} ref={measureRef} aria-hidden="true">
         {blocks.map((b) => <Fragment key={b.key}>{b.render()}</Fragment>)}
       </div>
     </>

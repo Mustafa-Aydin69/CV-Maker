@@ -2,9 +2,10 @@
 // Türkçe karakter desteği için Roboto fontu gömülür.
 
 import { jsPDF } from "jspdf";
-import type { CVData } from "./types";
+import type { CVData, TemplateId } from "./types";
 import { fmtMonth, dateRange } from "./format";
 import { sectionTitle, placeholder, contactLabel, type Lang } from "./i18n";
+import { TEMPLATE_STYLES } from "./templates";
 
 // ── Font yükleme ────────────────────────────────────────────────────
 const FONT_SOURCES: Array<(style: string, weight: string) => string> = [
@@ -84,6 +85,7 @@ export interface ExportOptions {
   marginMm?: number;
   fontScale?: number;
   language?: Lang;
+  template?: TemplateId;
 }
 
 function safeName(s: string): string {
@@ -103,7 +105,10 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
     marginMm       = 18,
     fontScale      = 1,
     language       = "tr",
+    template       = "classic",
   } = opts;
+  const ts = TEMPLATE_STYLES[template] ?? TEMPLATE_STYLES.classic;
+  const ITEM_GAP = 1.5 * ts.gap;
   const dr = (start: string, end: string, current: boolean) => dateRange(start, end, current, language);
   const sc = (pt: number) => pt * fontScale;
 
@@ -196,7 +201,7 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
     setF(sizePt);
     return doc.splitTextToSize(text, CONTENT_W).length * lh(sizePt, 1.35);
   };
-  const predictExp = (it: CVData["experience"][number]) => 4.6 + predictBullets(it.description) + 1.5;
+  const predictExp = (it: { description: string }) => 4.6 + predictBullets(it.description) + 1.5;
   const predictEdu = (it: CVData["education"][number]) => 4.6 + predictWrapped(it.notes) + 1.5;
   const predictProj = (it: CVData["projects"][number]) => 4.6 + predictBullets(it.description) + 1.5;
   const SEC_HEADER_H = 2 + 4.2 + 3.2;
@@ -222,8 +227,8 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
     headerRightLimit = PAGE_W - M_R - photoW - 4;
   }
 
-  setF(sc(22), "bold");
-  setColor(0, 0, 0);
+  setF(sc(22), ts.nameBold ? "bold" : "normal");
+  if (ts.nameAccent) setColor(aR, aG, aB); else setColor(0, 0, 0);
   doc.text(fullName, M_L, M_T + 6.5);
   let nameY = M_T + 6.5;
   if (data.title) {
@@ -257,22 +262,45 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
   }
 
   state.y = Math.max(nameY + 4, M_T + (hasPhoto ? photoH : 0), cy);
-  doc.setDrawColor(aR, aG, aB);
-  doc.setLineWidth(0.6);
-  doc.line(M_L, state.y, PAGE_W - M_R, state.y);
-  state.y += 5;
+  if (ts.headerRule === "accent") {
+    doc.setDrawColor(aR, aG, aB);
+    doc.setLineWidth(0.6);
+    doc.line(M_L, state.y, PAGE_W - M_R, state.y);
+  } else if (ts.headerRule === "thin") {
+    doc.setDrawColor(215, 215, 215);
+    doc.setLineWidth(0.2);
+    doc.line(M_L, state.y, PAGE_W - M_R, state.y);
+  }
+  state.y += 5 * ts.gap;
+
+  const setHeadingColor = () => {
+    if (ts.headingColor === "accent") setColor(aR, aG, aB);
+    else if (ts.headingColor === "gray") setColor(120, 120, 120);
+    else setColor(0, 0, 0);
+  };
 
   const section = (title: string, followH = 0) => {
     ensureSpace(SEC_HEADER_H + followH);
-    state.y += 2;
-    setF(sc(10.5), "bold");
-    setColor(0, 0, 0);
-    doc.text(title.toUpperCase(), M_L, state.y + 3);
+    state.y += 2 * ts.gap;
+    const sizePt = sc(ts.headingSizePt);
+    const text = ts.headingUppercase ? title.toUpperCase() : title;
+    setF(sizePt, "bold");
+    setHeadingColor();
+    if (ts.heading === "bar") {
+      // Sol şerit: başlık yüksekliğinde dolu dikdörtgen, metin biraz sağa kayar
+      doc.setFillColor(aR, aG, aB);
+      doc.rect(M_L, state.y + 3 - sizePt * 0.3528 * 0.8, 0.9, sizePt * 0.3528 * 1.05, "F");
+      doc.text(text, M_L + 3, state.y + 3);
+    } else {
+      doc.text(text, M_L, state.y + 3);
+    }
     state.y += 4.2;
-    doc.setDrawColor(180, 180, 180);
-    doc.setLineWidth(0.2);
-    doc.line(M_L, state.y, PAGE_W - M_R, state.y);
-    state.y += 3.2;
+    if (ts.heading === "underline") {
+      doc.setDrawColor(180, 180, 180);
+      doc.setLineWidth(0.2);
+      doc.line(M_L, state.y, PAGE_W - M_R, state.y);
+    }
+    state.y += 3.2 * ts.gap;
   };
 
   const drawItemHead = (title: string, sub: string, meta: string, metaItalic = false) => {
@@ -313,7 +341,7 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
         const subParts = [it.company, it.location].filter(Boolean);
         drawItemHead(it.role || placeholder("position", language), subParts.length ? " · " + subParts.join(" · ") : "", dr(it.start, it.end, it.current));
         drawBullets(it.description, M_L, CONTENT_W);
-        state.y += 1.5;
+        state.y += ITEM_GAP;
       }
     },
     education: () => {
@@ -325,7 +353,7 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
         const sub = (degLine ? " · " + degLine : "") + (it.gpa ? " · GPA " + it.gpa : "");
         drawItemHead(it.school || placeholder("school", language), sub, dr(it.start, it.end, false));
         if (it.notes) { setColor(60, 60, 60); drawWrapped(it.notes, M_L, CONTENT_W, sc(9.5), "normal"); }
-        state.y += 1.5;
+        state.y += ITEM_GAP;
       }
     },
     projects: () => {
@@ -335,7 +363,7 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
         ensureSpace(predictProj(it));
         drawItemHead(it.name || placeholder("project", language), it.stack ? " · " + it.stack : "", it.link || "", true);
         drawBullets(it.description, M_L, CONTENT_W);
-        state.y += 1.5;
+        state.y += ITEM_GAP;
       }
     },
     certifications: () => {
@@ -357,7 +385,7 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
         ensureSpace(6.1);
         drawItemHead(it.title, it.issuer ? " · " + it.issuer : "", fmtDatePdf(it.date));
         if (it.note) { setColor(60,60,60); drawWrapped(it.note, M_L, CONTENT_W, sc(9.5)); }
-        state.y += 1.5;
+        state.y += ITEM_GAP;
       }
     },
     skills: () => {
@@ -410,7 +438,18 @@ export async function exportPdf(data: CVData, opts: ExportOptions = {}): Promise
         const sub = [it.organization, it.location].filter(Boolean);
         drawItemHead(it.role, sub.length ? " · " + sub.join(" · ") : "", dr(it.start, it.end, it.current));
         drawBullets(it.description, M_L, CONTENT_W);
-        state.y += 1.5;
+        state.y += ITEM_GAP;
+      }
+    },
+    activities: () => {
+      const acts = (data.activities ?? []).filter((a) => a.role || a.organization);
+      if (!acts.length) return;
+      section(sectionTitle("activities", language), predictExp(acts[0]));
+      for (const it of acts) {
+        ensureSpace(predictExp(it));
+        drawItemHead(it.role || placeholder("actRole", language), it.organization ? " · " + it.organization : "", dr(it.start, it.end, it.current));
+        drawBullets(it.description, M_L, CONTENT_W);
+        state.y += ITEM_GAP;
       }
     },
     references: () => {

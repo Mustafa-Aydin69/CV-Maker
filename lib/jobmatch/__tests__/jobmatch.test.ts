@@ -9,7 +9,7 @@ function emptyCV(): CVData {
     firstName: "", lastName: "", title: "", phone: "", email: "",
     address: "", linkedin: "", github: "", website: "", photo: null, about: "",
     experience: [], education: [], projects: [], certifications: [],
-    awards: [], volunteers: [], references: [], customSections: [],
+    awards: [], volunteers: [], activities: [], references: [], customSections: [],
     skills: [], languages: [], hobbies: [],
   };
 }

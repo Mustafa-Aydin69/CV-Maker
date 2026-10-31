@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import type { CVData, Settings, AtsScore, FontOption, AccentOption } from "@/lib/types";
+import type { CVData, Settings, AtsScore, FontOption, AccentOption, TemplateId } from "@/lib/types";
 import { exportPdf } from "@/lib/pdf";
 import { exportDocx } from "@/lib/docx";
 import PaginatedCV from "./cv/PaginatedCV";
@@ -33,7 +33,7 @@ export default function PreviewPane({
   fontScale: number;
   sectionOrder: string[];
   hiddenSections: string[];
-  template: "classic" | "sidebar";
+  template: TemplateId;
   language: "tr" | "en";
 }) {
   const [exporting,     setExporting]     = useState(false);
@@ -51,6 +51,7 @@ export default function PreviewPane({
         marginMm: paddingMm,
         fontScale,
         language,
+        template,
       });
     } catch (err) {
       console.error(err);
@@ -66,7 +67,7 @@ export default function PreviewPane({
     if (exportingDocx) return;
     setExportingDocx(true);
     try {
-      await exportDocx(data, accent.val, sectionOrder, hiddenSections, language);
+      await exportDocx(data, accent.val, sectionOrder, hiddenSections, language, template);
     } catch (err) {
       console.error(err);
       alert("Word belgesi oluşturulurken bir hata oluştu.");
